@@ -12,12 +12,12 @@ interface SearchBarProps {
 }
 
 const EXAMPLE_QUERIES = [
-  "Show me all Series A rounds above $2M in 2024",
-  "Companies with recurring revenue models", 
-  "Recent investor updates from fintech startups",
-  "Term sheets with liquidation preferences",
-  "SaaS companies with over 50 employees",
-  "Board meeting minutes from Q4 2024"
+  "What are Advanced Navigation's Series B investment terms?",
+  "Show me Loopit's subscription agreement details",
+  "What is the liquidation preference structure?",
+  "Find board composition requirements",
+  "What are the anti-dilution provisions?",
+  "Show me all term sheets with liquidation preferences"
 ];
 
 export const SearchBar: React.FC<SearchBarProps> = ({ 
@@ -30,10 +30,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const [filtersVisible, setFiltersVisible] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchFilters, setSearchFilters] = useState({
+    company: '',
+    documentType: '',
     dateRange: { start: null, end: null },
-    investmentRange: { min: 0, max: 100000000 },
-    documentTypes: [],
-    stages: []
+    investmentRange: { min: 0, max: 100000000 }
   });
 
   const debouncedQuery = useDebounce(query, 300);
@@ -202,6 +202,41 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             className="mt-4 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Company Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  Company
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., Advanced Navigation"
+                  value={searchFilters.company}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  onChange={(e) => setSearchFilters({ ...searchFilters, company: e.target.value })}
+                />
+              </div>
+
+              {/* Document Type Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  Document Type
+                </label>
+                <select
+                  value={searchFilters.documentType}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  onChange={(e) => setSearchFilters({ ...searchFilters, documentType: e.target.value })}
+                >
+                  <option value="">All Types</option>
+                  <option value="subscription_agreement">Subscription Agreement</option>
+                  <option value="shareholders_agreement">Shareholders Agreement</option>
+                  <option value="term_sheet">Term Sheet</option>
+                  <option value="investor_update">Investor Update</option>
+                  <option value="financial_report">Financial Report</option>
+                  <option value="board_minutes">Board Minutes</option>
+                  <option value="due_diligence">Due Diligence</option>
+                </select>
+              </div>
+
               {/* Date Range */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
@@ -241,54 +276,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     onChange={(e) => setSearchFilters({ ...searchFilters, investmentRange: { ...searchFilters.investmentRange, max: Number(e.target.value) } })}
                   />
-                </div>
-              </div>
-
-              {/* Document Types */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Document Types
-                </label>
-                <div className="space-y-2">
-                  {['Term Sheet', 'Subscription Agreement', 'Investor Update', 'Financial Report', 'Board Meeting'].map(type => (
-                    <label key={type} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        className="mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        onChange={(e) => {
-                          const types = e.target.checked 
-                            ? [...searchFilters.documentTypes, type]
-                            : searchFilters.documentTypes.filter((t: string) => t !== type);
-                          setSearchFilters({ ...searchFilters, documentTypes: types });
-                        }}
-                      />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">{type}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Investment Stages */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Investment Stage
-                </label>
-                <div className="space-y-2">
-                  {['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C+'].map(stage => (
-                    <label key={stage} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        className="mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        onChange={(e) => {
-                          const stages = e.target.checked 
-                            ? [...searchFilters.stages, stage]
-                            : searchFilters.stages.filter((s: string) => s !== stage);
-                          setSearchFilters({ ...searchFilters, stages });
-                        }}
-                      />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">{stage}</span>
-                    </label>
-                  ))}
                 </div>
               </div>
             </div>
