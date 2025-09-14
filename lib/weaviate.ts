@@ -8,63 +8,61 @@ export class WeaviateService {
     try {
       const result = await client.graphql
         .get()
-        .withClassName('VCChunk')
+        .withClassName('VC_PE_Voyage_Binary_Production')
         .withFields([
-          'text', 
+          'content',              // Main text content (was 'text')
           'document_type', 
           'section_type', 
           'company_name', 
           'chunk_id',
           'document_id',
           'chunk_index',
-          'text_length',
-          'extraction_confidence',
-          'has_financial_data',
-          'has_legal_terms',
-          'key_entities',
-          'key_terms',
-          '_additional { score }'
+          'token_count',          // Token count (was 'text_length')
+          'retrieval_score',      // Retrieval score (was 'extraction_confidence')
+          'file_path',            // File path (new field available)
+          'round_info',           // Round information (new field available)
+          'created_at',           // Creation timestamp
+          '_additional { score }' // Vector similarity score
         ])
         .withNearText({ concepts: [query] })
         .withLimit(20)
         .do();
 
-      return result.data.Get.VCChunk;
+      return result.data.Get.VC_PE_Voyage_Binary_Production;
     } catch (error) {
       console.error('Semantic search error:', error);
       throw error;
     }
   }
 
-  // Hybrid search combining keyword and vector similarity
+  // BM25 keyword search (since collection has no vectorizer, use this instead of hybrid)
   static async hybridSearch(query: string, alpha: number = 0.5) {
     try {
       const result = await client.graphql
         .get()
-        .withClassName('VCChunk')
+        .withClassName('VC_PE_Voyage_Binary_Production')
         .withFields([
-          'text', 
+          'content',              // Main text content
           'document_type', 
           'section_type', 
           'company_name', 
           'chunk_id',
           'document_id',
           'chunk_index',
-          'text_length',
-          'extraction_confidence',
-          'has_financial_data',
-          'has_legal_terms',
-          'key_entities',
-          'key_terms',
-          '_additional { score }'
+          'token_count',          // Token count
+          'retrieval_score',      // Retrieval score
+          'file_path',            // File path
+          'round_info',           // Round information
+          'created_at',           // Creation timestamp
+          '_additional { score }' // BM25 similarity score
         ])
-        .withHybrid({ query, alpha })
+        .withBm25({ query })
         .withLimit(20)
         .do();
 
-      return result.data.Get.VCChunk;
+      return result.data.Get.VC_PE_Voyage_Binary_Production;
     } catch (error) {
-      console.error('Hybrid search error:', error);
+      console.error('BM25 search error:', error);
       throw error;
     }
   }

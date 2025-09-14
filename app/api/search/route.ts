@@ -123,17 +123,18 @@ export async function POST(request: NextRequest) {
       title: `${chunk.document_type || 'Document'} - ${chunk.section_type || 'Section'}`,
       type: chunk.document_type || 'Document',
       company: chunk.company_name || 'Unknown Company',
-      content: chunk.text || chunk.content || 'No content available',
-      confidence: chunk._additional?.score || chunk.extraction_confidence || 0,
+      content: chunk.content || 'No content available',
+      confidence: chunk._additional?.score || chunk.retrieval_score || 0,
       metadata: {
         section_type: chunk.section_type,
         document_type: chunk.document_type,
         chunk_index: chunk.chunk_index,
-        text_length: chunk.text_length,
-        has_financial_data: chunk.has_financial_data,
-        has_legal_terms: chunk.has_legal_terms,
-        key_entities: chunk.key_entities,
-        key_terms: chunk.key_terms
+        token_count: chunk.token_count,
+        retrieval_score: chunk.retrieval_score,
+        file_path: chunk.file_path,
+        round_info: chunk.round_info,
+        created_at: chunk.created_at,
+        document_id: chunk.document_id
       }
     }));
 
