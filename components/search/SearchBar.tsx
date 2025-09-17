@@ -88,9 +88,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     <div className="relative w-full max-w-4xl mx-auto">
       {/* Main Search Input */}
       <div className="relative">
-        <div className="flex items-center bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 dark:focus-within:ring-blue-800 transition-all">
+        <div className="flex items-center rounded-lg shadow-sm border transition-all" style={{ backgroundColor: '#ffffff', borderColor: '#d4d4d8' }}>
           <div className="flex items-center justify-center pl-6 pr-4">
-            <Sparkles className="h-6 w-6 text-blue-500" />
+            <Search className="h-5 w-5" style={{ color: '#71717a' }} />
           </div>
           <input
             type="text"
@@ -98,7 +98,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             onChange={(e) => setQuery(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder={placeholder}
-            className="flex-1 px-2 py-5 bg-transparent outline-none text-gray-900 dark:text-white text-lg placeholder-gray-500"
+            className="flex-1 px-2 py-4 bg-transparent outline-none text-lg" style={{ color: '#18181b' }}
             disabled={isSearching}
           />
           
@@ -127,7 +127,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           <button
             onClick={handleSearch}
             disabled={!query.trim() || isSearching}
-            className="px-8 py-3 mr-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-semibold transition-all disabled:cursor-not-allowed"
+            className="px-6 py-2.5 mr-2 rounded-lg font-medium transition-all disabled:cursor-not-allowed border" style={{ backgroundColor: '#18181b', color: '#fafafa', borderColor: '#18181b' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#27272a'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#18181b'}
           >
             {isSearching ? (
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -183,7 +183,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               <button
                 key={index}
                 onClick={() => selectExampleQuery(example)}
-                className="px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-sm transition-colors border border-gray-200 dark:border-gray-600"
+                className="px-3 py-1.5 rounded-md text-sm transition-all border" style={{ backgroundColor: '#fafafa', color: '#52525b', borderColor: '#e4e4e7', fontFamily: 'inherit' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f4f4f5'; e.currentTarget.style.borderColor = '#d4d4d8'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#fafafa'; e.currentTarget.style.borderColor = '#e4e4e7'; }}
               >
                 {example}
               </button>

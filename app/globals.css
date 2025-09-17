@@ -1,27 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   html {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Crimson Text', serif;
   }
-  
+
   body {
-    @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100;
+    @apply text-gray-900;
+    background-color: #fbf9f5;
+  }
+
+  /* Dark mode override */
+  body.dark {
+    @apply bg-gray-900 text-gray-100;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors;
+    @apply px-5 py-2 rounded-lg font-medium transition-all;
+    background-color: #18181b;
+    color: #fafafa;
+    border: 1px solid #18181b;
   }
-  
+
+  .btn-primary:hover {
+    background-color: #27272a;
+  }
+
   .btn-secondary {
-    @apply px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors;
+    @apply px-5 py-2 rounded-lg font-medium transition-all;
+    background-color: #ffffff;
+    color: #18181b;
+    border: 1px solid #d4d4d8;
   }
-  
+
+  .btn-secondary:hover {
+    background-color: #f4f4f5;
+  }
+
   .card {
-    @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700;
+    @apply rounded-lg shadow-sm;
+    background-color: #ffffff;
+    border: 1px solid #e4e4e7;
   }
 }
