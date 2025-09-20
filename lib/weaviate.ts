@@ -59,6 +59,8 @@ export class WeaviateService {
         .withLimit(20)
         .do();
 
+      // Debug logging removed for cleaner output
+
       return result.data.Get.VC_PE_Voyage_Binary_Production;
     } catch (error) {
       console.error('BM25 search error:', error);
