@@ -8,11 +8,11 @@ export async function GET() {
     // Get all classes
     const schema = await client.schema.getter().do();
     
-    const availableClasses = schema.classes.map((cls: any) => cls.class);
+    const availableClasses = (schema.classes || []).map((cls: any) => cls.class);
     console.log('Available classes:', availableClasses);
-    
+
     // Find the VC_PE_Voyage_Binary_Production class
-    const targetClass = schema.classes.find((cls: any) => cls.class === 'VC_PE_Voyage_Binary_Production');
+    const targetClass = (schema.classes || []).find((cls: any) => cls.class === 'VC_PE_Voyage_Binary_Production');
     
     let result: any = {
       availableClasses,
@@ -24,7 +24,7 @@ export async function GET() {
         class: targetClass.class,
         description: targetClass.description || 'No description',
         vectorizer: targetClass.vectorizer || 'Not specified',
-        properties: targetClass.properties.map((prop: any) => ({
+        properties: (targetClass.properties || []).map((prop: any) => ({
           name: prop.name,
           type: prop.dataType,
           description: prop.description || 'No description',
@@ -37,7 +37,7 @@ export async function GET() {
         const sample = await client.graphql
           .get()
           .withClassName('VC_PE_Voyage_Binary_Production')
-          .withFields(['content', 'document_type', 'company_name', 'chunk_id', 'document_id', 'section_type', 'chunk_index', 'token_count'])
+          .withFields('content document_type company_name chunk_id document_id section_type chunk_index token_count')
           .withLimit(1)
           .do();
           

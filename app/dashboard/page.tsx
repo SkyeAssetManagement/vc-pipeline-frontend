@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, TrendingUp, TrendingDown, Minus, BarChart3, DollarSign, Building2, FileText, Users, Calendar } from 'lucide-react';
-import { formatCurrency, calculatePerformance } from '@/lib/companies-data';
+import { formatCurrency, calculatePerformance } from '@/lib/portfolio-utils';
 
 interface DashboardMetrics {
   totalCompanies: number;
@@ -89,7 +89,7 @@ export default function DashboardPage() {
           percentage: ((count as number) / companies.length) * 100
         }));
 
-        // Recent investments (mock data for now)
+        // Recent investments from actual data
         const recentInvestments = companies
           .filter((c: any) => c.investmentYear)
           .sort((a: any, b: any) => b.investmentYear - a.investmentYear)
@@ -97,7 +97,7 @@ export default function DashboardPage() {
           .map((c: any) => ({
             company: c.name,
             amount: c.totalInvestment || 0,
-            date: `${c.investmentYear}-01-01`
+            date: c.investmentDate || `${c.investmentYear}` // Use actual date or just year
           }));
 
         setMetrics({
@@ -353,7 +353,7 @@ export default function DashboardPage() {
         {/* Quick Actions */}
         <div className="rounded-xl shadow-lg p-6" style={{ backgroundColor: '#ffffff' }}>
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Link
               href="/companies"
               className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -362,16 +362,6 @@ export default function DashboardPage() {
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">View All Companies</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Browse portfolio companies</p>
-              </div>
-            </Link>
-            <Link
-              href="/documents"
-              className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
-              <FileText className="w-6 h-6 text-green-500" />
-              <div>
-                <p className="font-medium text-gray-900 dark:text-white">Manage Documents</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Upload and organize files</p>
               </div>
             </Link>
             <button className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">

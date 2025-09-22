@@ -32,7 +32,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const [searchFilters, setSearchFilters] = useState({
     company: '',
     documentType: '',
-    dateRange: { start: null, end: null },
+    dateRange: { start: '' as string | null, end: '' as string | null },
     investmentRange: { min: 0, max: 100000000 }
   });
 

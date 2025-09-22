@@ -2,6 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { WeaviateService } from '@/lib/weaviate';
 import { ClaudeService } from '@/lib/claude';
 
+// Function to enhance queries with office investment entities
+function enhanceQueryWithInvestors(query: string): string {
+  const officeInvestors = ['Upswell Ventures', 'Arrochar Pty Ltd', 'Skye Alba Pty Ltd'];
+
+  // Keywords that suggest the user is asking about investments, deals, or entities
+  const investmentKeywords = [
+    'investment', 'investor', 'funding', 'round', 'valuation', 'deal', 'term sheet',
+    'subscription', 'agreement', 'participant', 'lead investor', 'venture', 'capital',
+    'equity', 'shares', 'stakeholder', 'portfolio', 'raise', 'series', 'seed'
+  ];
+
+  // Check if query contains investment-related terms
+  const isInvestmentQuery = investmentKeywords.some(keyword =>
+    query.toLowerCase().includes(keyword.toLowerCase())
+  );
+
+  // If it's an investment-related query, enhance with our office entities
+  if (isInvestmentQuery) {
+    const investorTerms = officeInvestors.join(' OR ');
+    return `${query} OR ${investorTerms}`;
+  }
+
+  return query;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -18,12 +43,16 @@ export async function POST(request: NextRequest) {
     console.log('📊 Filters:', filters);
     console.log('🔧 Search type:', searchType);
 
+    // Enhance query to include office investment entities for relevant searches
+    const enhancedQuery = enhanceQueryWithInvestors(query);
+    console.log('🔍 Enhanced query:', enhancedQuery);
+
     // Perform search based on type
     let searchResults;
     if (searchType === 'semantic') {
-      searchResults = await WeaviateService.semanticSearch(query, filters);
+      searchResults = await WeaviateService.semanticSearch(enhancedQuery, filters);
     } else {
-      searchResults = await WeaviateService.hybridSearch(query, filters);
+      searchResults = await WeaviateService.hybridSearch(enhancedQuery, filters);
     }
 
     // Ensure searchResults is an array
@@ -88,6 +117,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       query,
+      enhancedQuery,
       results: processedResults,
       companyGroups,
       aiAnswer,

@@ -67,7 +67,7 @@ export class ClaudeService {
       const companyName = group.company.replace(/^\d+\.\s*/, '');
       context += `Company ${index + 1}: ${companyName}\n`;
       context += `Documents: ${group.documents.length} found\n`;
-      context += `Document Types: ${[...new Set(group.documents.map((d: any) => d.documentType))].join(', ')}\n`;
+      context += `Document Types: ${Array.from(new Set(group.documents.map((d: any) => d.documentType))).join(', ')}\n`;
       context += `Relevance Score: ${group.averageScore?.toFixed(2) || 'N/A'}\n\n`;
     });
 

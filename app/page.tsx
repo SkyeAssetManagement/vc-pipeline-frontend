@@ -249,13 +249,6 @@ export default function HomePage() {
             Access Full Dashboard
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
-          <Link
-            href="/documents"
-            className="inline-flex items-center justify-center px-6 py-3 text-lg font-medium rounded-lg transition-all border" style={{ backgroundColor: '#3b82f6', color: '#ffffff', borderColor: '#3b82f6' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#2563eb'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#3b82f6'; }}
-          >
-            Manage Documents
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Link>
         </div>
 
       </div>

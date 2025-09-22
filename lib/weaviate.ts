@@ -8,21 +8,7 @@ export class WeaviateService {
       const result = await client.graphql
         .get()
         .withClassName('VC_PE_Voyage_Binary_Production')
-        .withFields([
-          'content',              // Main text content (was 'text')
-          'document_type',
-          'section_type',
-          'company_name',
-          'chunk_id',
-          'document_id',
-          'chunk_index',
-          'token_count',          // Token count (was 'text_length')
-          'retrieval_score',      // Retrieval score (was 'extraction_confidence')
-          'file_path',            // File path (new field available)
-          'round_info',           // Round information (new field available)
-          'created_at',           // Creation timestamp
-          '_additional { score }' // Vector similarity score
-        ])
+        .withFields('content document_type section_type company_name chunk_id document_id chunk_index token_count retrieval_score file_path round_info created_at _additional { score }')
         .withNearText({ concepts: [query] })
         .withLimit(20)
         .do();
@@ -40,21 +26,7 @@ export class WeaviateService {
       const result = await client.graphql
         .get()
         .withClassName('VC_PE_Voyage_Binary_Production')
-        .withFields([
-          'content',              // Main text content
-          'document_type',
-          'section_type',
-          'company_name',
-          'chunk_id',
-          'document_id',
-          'chunk_index',
-          'token_count',          // Token count
-          'retrieval_score',      // Retrieval score
-          'file_path',            // File path
-          'round_info',           // Round information
-          'created_at',           // Creation timestamp
-          '_additional { score }' // BM25 similarity score
-        ])
+        .withFields('content document_type section_type company_name chunk_id document_id chunk_index token_count retrieval_score file_path round_info created_at _additional { score }')
         .withBm25({ query })
         .withLimit(20)
         .do();
@@ -74,16 +46,7 @@ export class WeaviateService {
       const result = await client.graphql
         .get()
         .withClassName(CLASSES.COMPANY)
-        .withFields([
-          'name',
-          'logo',
-          'industry',
-          'stage',
-          'valuation',
-          'investmentAmount',
-          'ownershipPercentage',
-          'metrics'
-        ])
+        .withFields('name logo industry stage valuation investmentAmount ownershipPercentage metrics')
         .withLimit(100)
         .do();
 
@@ -105,18 +68,7 @@ export class WeaviateService {
           operator: 'Equal',
           valueString: id
         })
-        .withFields([
-          'name',
-          'logo',
-          'industry',
-          'stage',
-          'valuation',
-          'investmentAmount',
-          'ownershipPercentage',
-          'metrics',
-          'documents { ... on Document { title type uploadDate fileUrl extractedData verified } }',
-          'investments { ... on Investment { round amount date leadInvestor participants preMoneyValuation postMoneyValuation } }'
-        ])
+        .withFields('name logo industry stage valuation investmentAmount ownershipPercentage metrics documents { ... on Document { title type uploadDate fileUrl extractedData verified } } investments { ... on Investment { round amount date leadInvestor participants preMoneyValuation postMoneyValuation } }')
         .do();
 
       return result.data.Get.Company[0];

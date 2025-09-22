@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { ArrowLeft, TrendingUp, TrendingDown, Globe, Calendar, DollarSign, BarChart3, Minus } from 'lucide-react';
-import { getCompanyById, formatCurrency, calculatePerformance, companiesData } from '@/lib/companies-data';
+import { formatCurrency, calculatePerformance } from '@/lib/portfolio-utils';
 
 function OtherCompanies({ currentCompanyId }: { currentCompanyId: string }) {
   const [otherCompanies, setOtherCompanies] = useState<any[]>([]);
@@ -19,13 +19,9 @@ function OtherCompanies({ currentCompanyId }: { currentCompanyId: string }) {
         }
       })
       .catch(() => {
-        // Fallback to mock data
-        const filtered = companiesData.filter(c => c.id !== currentCompanyId);
-        setOtherCompanies(filtered.map(c => ({
-          company_id: c.id,
-          name: c.company_name,
-          stage: c.stage
-        })));
+        // NO PLACEHOLDER DATA FALLBACK
+        // If real data cannot be fetched, show empty list
+        setOtherCompanies([]);
       });
   }, [currentCompanyId]);
 
@@ -77,25 +73,15 @@ export default function CompanyPage() {
               initial_investment_year: foundCompany.investmentYear
             });
           } else {
-            // Fallback to mock data if company not found in extracted data
-            const mockCompany = getCompanyById(params.id as string);
-            if (mockCompany) {
-              setCompany(mockCompany);
-            } else {
-              setError('Company not found');
-            }
+            // NO PLACEHOLDER DATA FALLBACK
+            setError('Company not found in portfolio data');
           }
         }
       }
     } catch (err) {
       console.error('Error fetching company:', err);
-      // Fallback to mock data
-      const mockCompany = getCompanyById(params.id as string);
-      if (mockCompany) {
-        setCompany(mockCompany);
-      } else {
-        setError('Failed to load company data');
-      }
+      // NO PLACEHOLDER DATA FALLBACK
+      setError('Failed to load company data');
     } finally {
       setLoading(false);
     }
@@ -353,7 +339,7 @@ export default function CompanyPage() {
               <div>
                 <p className="text-sm text-gray-500 mb-1">Holding %</p>
                 <p className="text-lg font-semibold" style={{ color: '#18181b' }}>
-                  {company.ownership_percentage || '5-10'}%
+                  {company.ownership_percentage ? `${company.ownership_percentage}%` : 'N/A'}
                 </p>
               </div>
             </div>
@@ -366,13 +352,13 @@ export default function CompanyPage() {
               <div>
                 <p className="text-sm text-gray-500 mb-1">Total Raised</p>
                 <p className="text-lg font-semibold" style={{ color: '#18181b' }}>
-                  {formatCurrency(company.total_raised || company.investment_amount * 1.5)}
+                  {company.total_raised ? formatCurrency(company.total_raised) : 'N/A'}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 mb-1">Company Valuation</p>
                 <p className="text-lg font-semibold" style={{ color: '#18181b' }}>
-                  {formatCurrency(company.company_valuation || company.fair_value * 10)}
+                  {company.company_valuation ? formatCurrency(company.company_valuation) : 'N/A'}
                 </p>
               </div>
               <div>
@@ -397,25 +383,25 @@ export default function CompanyPage() {
               <div>
                 <p className="text-sm text-gray-500 mb-1">Pre-money Valuation</p>
                 <p className="text-lg font-semibold" style={{ color: '#18181b' }}>
-                  {formatCurrency(company.pre_money || company.fair_value * 8)}
+                  {company.pre_money ? formatCurrency(company.pre_money) : 'N/A'}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 mb-1">Post-money Valuation</p>
                 <p className="text-lg font-semibold" style={{ color: '#18181b' }}>
-                  {formatCurrency(company.post_money || company.fair_value * 10)}
+                  {company.post_money ? formatCurrency(company.post_money) : 'N/A'}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 mb-1">Shares Owned</p>
                 <p className="text-lg font-semibold" style={{ color: '#18181b' }}>
-                  {company.shares_owned || '100,000'}
+                  {company.shares_owned || 'N/A'}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 mb-1">Price Per Share</p>
                 <p className="text-lg font-semibold" style={{ color: '#18181b' }}>
-                  ${company.price_per_share || (company.investment_amount / 100000).toFixed(2)}
+                  {company.price_per_share ? `$${company.price_per_share.toFixed(2)}` : 'N/A'}
                 </p>
               </div>
             </div>
@@ -423,19 +409,19 @@ export default function CompanyPage() {
               <div>
                 <p className="text-sm text-gray-500 mb-1">Shares on Issue</p>
                 <p className="text-lg font-semibold" style={{ color: '#18181b' }}>
-                  {company.shares_on_issue || '1,000,000'}
+                  {company.shares_on_issue || 'N/A'}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 mb-1">Original PPS</p>
                 <p className="text-lg font-semibold" style={{ color: '#18181b' }}>
-                  ${company.original_pps || (company.investment_amount / 120000).toFixed(2)}
+                  {company.original_pps ? `$${company.original_pps.toFixed(2)}` : 'N/A'}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 mb-1">Current PPS</p>
                 <p className="text-lg font-semibold" style={{ color: '#18181b' }}>
-                  ${company.valuation_pps || (company.fair_value / 100000).toFixed(2)}
+                  {company.valuation_pps ? `$${company.valuation_pps.toFixed(2)}` : 'N/A'}
                 </p>
               </div>
               <div>
