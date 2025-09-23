@@ -19,7 +19,7 @@ export default function HomePage() {
     setSearchAnswer('');
     
     try {
-      const response = await fetch('/api/search', {
+      const response = await fetch('/api/search-optimized', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,7 +27,8 @@ export default function HomePage() {
         body: JSON.stringify({
           query,
           filters,
-          searchType: 'hybrid'
+          searchType: 'hybrid',
+          useOptimizedCollection: true
         }),
       });
 
@@ -163,25 +164,88 @@ export default function HomePage() {
                             <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-full">
                               {result.documentType || 'Document'}
                             </span>
-                            {result.sectionType && (
-                              <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded-full">
-                                {result.sectionType}
+                            {result.industry && (
+                              <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded-full">
+                                {result.industry}
+                              </span>
+                            )}
+                            {result.hasInvestmentAmount && (
+                              <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs rounded-full">
+                                💰 Investment
+                              </span>
+                            )}
+                            {result.hasValuation && (
+                              <span className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 text-xs rounded-full">
+                                📊 Valuation
                               </span>
                             )}
                           </div>
                           <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                             <strong>Company:</strong> {result.company}
                           </p>
+
+                          {/* Financial Data Display */}
+                          {(result.investmentAmount > 0 || result.preMoneyValuation > 0 || result.ownershipPercentage > 0) && (
+                            <div className="mb-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                                {result.investmentAmount > 0 && (
+                                  <div>
+                                    <span className="font-medium text-gray-700 dark:text-gray-300">Investment:</span>
+                                    <span className="ml-1 text-green-600 dark:text-green-400">
+                                      ${result.investmentAmount.toLocaleString()}
+                                    </span>
+                                  </div>
+                                )}
+                                {result.preMoneyValuation > 0 && (
+                                  <div>
+                                    <span className="font-medium text-gray-700 dark:text-gray-300">Pre-Money:</span>
+                                    <span className="ml-1 text-blue-600 dark:text-blue-400">
+                                      ${result.preMoneyValuation.toLocaleString()}
+                                    </span>
+                                  </div>
+                                )}
+                                {result.ownershipPercentage > 0 && (
+                                  <div>
+                                    <span className="font-medium text-gray-700 dark:text-gray-300">Ownership:</span>
+                                    <span className="ml-1 text-purple-600 dark:text-purple-400">
+                                      {result.ownershipPercentage.toFixed(2)}%
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              {(result.postMoneyValuation > 0 || result.fairValue > 0) && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mt-2">
+                                  {result.postMoneyValuation > 0 && (
+                                    <div>
+                                      <span className="font-medium text-gray-700 dark:text-gray-300">Post-Money:</span>
+                                      <span className="ml-1 text-indigo-600 dark:text-indigo-400">
+                                        ${result.postMoneyValuation.toLocaleString()}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {result.fairValue > 0 && (
+                                    <div>
+                                      <span className="font-medium text-gray-700 dark:text-gray-300">Fair Value:</span>
+                                      <span className="ml-1 text-orange-600 dark:text-orange-400">
+                                        ${result.fairValue.toLocaleString()}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
                           <p className="text-gray-600 dark:text-gray-400 mb-3">{result.snippet}</p>
                           <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                            {result.filePath && (
-                              <span>📄 {result.filePath.split('/').pop()}</span>
-                            )}
-                            {result.tokenCount && (
-                              <span>📊 {result.tokenCount} tokens</span>
+                            {result.extractionConfidence > 0 && (
+                              <span>🎯 Confidence: {(result.extractionConfidence * 100).toFixed(1)}%</span>
                             )}
                             {result.score && (
-                              <span>🎯 Score: {(result.score * 100).toFixed(1)}%</span>
+                              <span>📈 Relevance: {(result.score * 100).toFixed(1)}%</span>
+                            )}
+                            {result.extractionTimestamp && (
+                              <span>📅 {new Date(result.extractionTimestamp).toLocaleDateString()}</span>
                             )}
                           </div>
                         </div>

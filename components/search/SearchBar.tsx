@@ -32,8 +32,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const [searchFilters, setSearchFilters] = useState({
     company: '',
     documentType: '',
+    industry: '',
     dateRange: { start: '' as string | null, end: '' as string | null },
-    investmentRange: { min: 0, max: 100000000 }
+    investmentRange: { min: 0, max: 100000000 },
+    valuationRange: { min: 0, max: 1000000000 },
+    ownershipRange: { min: 0, max: 100 },
+    minConfidence: 0,
+    hasInvestmentAmount: false,
+    hasValuation: false
   });
 
   const debouncedQuery = useDebounce(query, 300);
@@ -201,81 +207,188 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             exit={{ height: 0, opacity: 0 }}
             className="mt-4 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Company Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Company
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., Advanced Navigation"
-                  value={searchFilters.company}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  onChange={(e) => setSearchFilters({ ...searchFilters, company: e.target.value })}
-                />
-              </div>
-
-              {/* Document Type Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Document Type
-                </label>
-                <select
-                  value={searchFilters.documentType}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  onChange={(e) => setSearchFilters({ ...searchFilters, documentType: e.target.value })}
-                >
-                  <option value="">All Types</option>
-                  <option value="subscription_agreement">Subscription Agreement</option>
-                  <option value="shareholders_agreement">Shareholders Agreement</option>
-                  <option value="term_sheet">Term Sheet</option>
-                  <option value="investor_update">Investor Update</option>
-                  <option value="financial_report">Financial Report</option>
-                  <option value="board_minutes">Board Minutes</option>
-                  <option value="due_diligence">Due Diligence</option>
-                </select>
-              </div>
-
-              {/* Date Range */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Date Range
-                </label>
-                <div className="space-y-3">
+            <div className="space-y-6">
+              {/* First Row - Basic Filters */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Company Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Company
+                  </label>
                   <input
-                    type="date"
-                    placeholder="Start date"
+                    type="text"
+                    placeholder="e.g., Advanced Navigation"
+                    value={searchFilters.company}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    onChange={(e) => setSearchFilters({ ...searchFilters, dateRange: { ...searchFilters.dateRange, start: e.target.value } })}
+                    onChange={(e) => setSearchFilters({ ...searchFilters, company: e.target.value })}
                   />
+                </div>
+
+                {/* Document Type Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Document Type
+                  </label>
+                  <select
+                    value={searchFilters.documentType}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    onChange={(e) => setSearchFilters({ ...searchFilters, documentType: e.target.value })}
+                  >
+                    <option value="">All Types</option>
+                    <option value="subscription_agreement">Subscription Agreement</option>
+                    <option value="shareholders_agreement">Shareholders Agreement</option>
+                    <option value="term_sheet">Term Sheet</option>
+                    <option value="investor_update">Investor Update</option>
+                    <option value="financial_report">Financial Report</option>
+                    <option value="board_minutes">Board Minutes</option>
+                    <option value="due_diligence">Due Diligence</option>
+                  </select>
+                </div>
+
+                {/* Industry Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Industry
+                  </label>
                   <input
-                    type="date"
-                    placeholder="End date"
+                    type="text"
+                    placeholder="e.g., Technology, Healthcare"
+                    value={searchFilters.industry}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    onChange={(e) => setSearchFilters({ ...searchFilters, dateRange: { ...searchFilters.dateRange, end: e.target.value } })}
+                    onChange={(e) => setSearchFilters({ ...searchFilters, industry: e.target.value })}
                   />
+                </div>
+
+                {/* Confidence Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Min Confidence
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={searchFilters.minConfidence}
+                    className="w-full"
+                    onChange={(e) => setSearchFilters({ ...searchFilters, minConfidence: parseFloat(e.target.value) })}
+                  />
+                  <span className="text-xs text-gray-500">{(searchFilters.minConfidence * 100).toFixed(0)}%</span>
                 </div>
               </div>
 
-              {/* Investment Range */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Investment Amount ($)
+              {/* Second Row - Financial Filters */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Investment Range */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Investment Amount ($)
+                  </label>
+                  <div className="space-y-3">
+                    <input
+                      type="number"
+                      placeholder="Minimum"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      onChange={(e) => setSearchFilters({ ...searchFilters, investmentRange: { ...searchFilters.investmentRange, min: Number(e.target.value) } })}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Maximum"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      onChange={(e) => setSearchFilters({ ...searchFilters, investmentRange: { ...searchFilters.investmentRange, max: Number(e.target.value) } })}
+                    />
+                  </div>
+                </div>
+
+                {/* Valuation Range */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Valuation ($)
+                  </label>
+                  <div className="space-y-3">
+                    <input
+                      type="number"
+                      placeholder="Minimum"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      onChange={(e) => setSearchFilters({ ...searchFilters, valuationRange: { ...searchFilters.valuationRange, min: Number(e.target.value) } })}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Maximum"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      onChange={(e) => setSearchFilters({ ...searchFilters, valuationRange: { ...searchFilters.valuationRange, max: Number(e.target.value) } })}
+                    />
+                  </div>
+                </div>
+
+                {/* Ownership Range */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Ownership (%)
+                  </label>
+                  <div className="space-y-3">
+                    <input
+                      type="number"
+                      placeholder="Minimum"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      onChange={(e) => setSearchFilters({ ...searchFilters, ownershipRange: { ...searchFilters.ownershipRange, min: Number(e.target.value) } })}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Maximum"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      onChange={(e) => setSearchFilters({ ...searchFilters, ownershipRange: { ...searchFilters.ownershipRange, max: Number(e.target.value) } })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Third Row - Boolean Filters */}
+              <div className="flex flex-wrap gap-6">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={searchFilters.hasInvestmentAmount}
+                    onChange={(e) => setSearchFilters({ ...searchFilters, hasInvestmentAmount: e.target.checked })}
+                    className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Has Investment Amount</span>
                 </label>
-                <div className="space-y-3">
+
+                <label className="flex items-center">
                   <input
-                    type="number"
-                    placeholder="Minimum"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    onChange={(e) => setSearchFilters({ ...searchFilters, investmentRange: { ...searchFilters.investmentRange, min: Number(e.target.value) } })}
+                    type="checkbox"
+                    checked={searchFilters.hasValuation}
+                    onChange={(e) => setSearchFilters({ ...searchFilters, hasValuation: e.target.checked })}
+                    className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <input
-                    type="number"
-                    placeholder="Maximum"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    onChange={(e) => setSearchFilters({ ...searchFilters, investmentRange: { ...searchFilters.investmentRange, max: Number(e.target.value) } })}
-                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Has Valuation Data</span>
+                </label>
+
+                <div className="flex items-center">
+                  <button
+                    onClick={() => setSearchFilters({
+                      company: '',
+                      documentType: '',
+                      industry: '',
+                      dateRange: { start: null, end: null },
+                      investmentRange: { min: 0, max: 100000000 },
+                      valuationRange: { min: 0, max: 1000000000 },
+                      ownershipRange: { min: 0, max: 100 },
+                      minConfidence: 0,
+                      hasInvestmentAmount: false,
+                      hasValuation: false
+                    })}
+                    className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                  >
+                    Clear All Filters
+                  </button>
                 </div>
               </div>
             </div>
