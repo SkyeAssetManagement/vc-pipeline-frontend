@@ -1,7 +1,7 @@
-# VeronaAI VC Pipeline Frontend - Code Documentation
+# Verona Capital Private Equity Platform - Code Documentation
 
 ## Project Overview
-AI-powered venture capital portfolio management platform built with Next.js 14, integrated with Weaviate vector database and Claude Sonnet 4 for intelligent document search and analysis.
+AI-powered private equity portfolio management platform built with Next.js 14, integrated with Weaviate vector database and Claude Sonnet 4 for intelligent document search and analysis. Features enhanced UI with modern design, dedicated portfolio overview page, and optimized search results display.
 
 ## Architecture & Tech Stack
 
@@ -29,6 +29,7 @@ AI-powered venture capital portfolio management platform built with Next.js 14, 
 │   │   └── weaviate-schema/      # Schema inspection
 │   ├── companies/                # Company pages
 │   ├── dashboard/                # Analytics dashboard
+│   ├── portfolio/                # Portfolio overview page
 │   └── page.tsx                  # Home page with search
 ├── components/                   # React components
 │   └── search/
@@ -74,6 +75,8 @@ User Query → Weaviate Search → Claude Processing → Enhanced Results + AI A
 - Fair value calculations
 - Confidence scores with visual indicators
 - Industry and document type tags
+- Limited to top 5 results with "show more" indicator
+- Gradient backgrounds and hover effects
 
 ### 4. Claude Integration (`lib/claude.ts`)
 **AI Answer Generation**:
@@ -210,6 +213,25 @@ curl -X POST http://localhost:3003/api/search-optimized \
 - Console logging in development
 - Error tracking for production
 - Search analytics for optimization
+
+## UI/UX Design Features
+
+### Modern Design System
+- **Color Scheme**: Warm background (#fbf9f5) with blue/indigo accents
+- **Typography**: Gradient text effects for headings
+- **Components**: Rounded corners, shadows, and hover animations
+- **Responsive**: Mobile-first design with responsive layouts
+
+### Interactive Elements
+- **Buttons**: Gradient backgrounds with hover animations and transform effects
+- **Logo**: Hover scale animation with drop shadow
+- **Cards**: Gradient backgrounds with border hover effects
+- **Search Results**: Limited display with "show more" indicators
+
+### Page Structure
+- **Home Page**: Clean search interface with CTA buttons
+- **Portfolio Page**: Dedicated full-screen dashboard view
+- **Navigation**: Consistent header with logo and user menu across pages
 
 ## Future Enhancements
 

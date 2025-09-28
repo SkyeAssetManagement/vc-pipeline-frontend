@@ -19,15 +19,10 @@ export class OptimizedWeaviateService {
           pre_money_valuation
           post_money_valuation
           fair_value
-          valuation_price_per_share
           ownership_percentage
-          current_ownership_percentage
-          multiple_on_invested_capital
-          internal_rate_of_return
           claude_extraction
           chunk_id
           extraction_confidence
-          extraction_timestamp
           _additional { score }
         `)
         .withBm25({ query })
@@ -56,15 +51,10 @@ export class OptimizedWeaviateService {
           pre_money_valuation
           post_money_valuation
           fair_value
-          valuation_price_per_share
           ownership_percentage
-          current_ownership_percentage
-          multiple_on_invested_capital
-          internal_rate_of_return
           claude_extraction
           chunk_id
           extraction_confidence
-          extraction_timestamp
           _additional { score }
         `)
         .withBm25({ query })
@@ -286,15 +276,10 @@ export class OptimizedWeaviateService {
           pre_money_valuation
           post_money_valuation
           fair_value
-          valuation_price_per_share
           ownership_percentage
-          current_ownership_percentage
-          multiple_on_invested_capital
-          internal_rate_of_return
           claude_extraction
           chunk_id
           extraction_confidence
-          extraction_timestamp
           _additional { score }
         `)
         .withBm25({ query })

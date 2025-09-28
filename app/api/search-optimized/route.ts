@@ -97,11 +97,11 @@ export async function POST(request: NextRequest) {
       preMoneyValuation: result.pre_money_valuation || 0,
       postMoneyValuation: result.post_money_valuation || 0,
       fairValue: result.fair_value || 0,
-      valuationPricePerShare: result.valuation_price_per_share || 0,
+      valuationPricePerShare: 0, // Field removed from schema
       ownershipPercentage: result.ownership_percentage || 0,
-      currentOwnershipPercentage: result.current_ownership_percentage || 0,
-      multipleOnInvestedCapital: result.multiple_on_invested_capital || 0,
-      internalRateOfReturn: result.internal_rate_of_return || 0,
+      currentOwnershipPercentage: 0, // Field removed from schema
+      multipleOnInvestedCapital: 0, // Field removed from schema
+      internalRateOfReturn: 0, // Field removed from schema
 
       // Content analysis flags (derived from financial data)
       hasInvestmentAmount: (result.investment_amount && result.investment_amount > 0) || false,
@@ -112,12 +112,12 @@ export async function POST(request: NextRequest) {
       // Standard metadata
       score: result._additional?.score || 0,
       extractionConfidence: result.extraction_confidence || 0,
-      extractionTimestamp: result.extraction_timestamp,
+      extractionTimestamp: null, // Field removed from schema
       contentConfidence: result.extraction_confidence || 0, // Map for backwards compatibility
 
       // Backwards compatibility fields
       extractedAmounts: result.investment_amount ? [{ value: result.investment_amount, currency: 'USD' }] : [],
-      extractedDates: result.extraction_timestamp ? [result.extraction_timestamp] : [],
+      extractedDates: [], // Timestamp field removed from schema
       keyParties: [],
       financialTerms: {
         investment_amount: result.investment_amount,

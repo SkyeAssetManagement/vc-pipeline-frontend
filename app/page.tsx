@@ -60,19 +60,19 @@ export default function HomePage() {
         <div className="text-center mb-12">
           <div className="flex justify-between items-center mb-6">
             <div className="flex-1"></div>
-            <Link href="/" className="hover:opacity-80 transition-opacity">
+            <Link href="/" className="hover:scale-105 transition-transform duration-200">
               <img
                 src="/VeronaCapitalLogo.png"
                 alt="Verona Capital"
-                className="h-16 mx-auto"
+                className="h-20 mx-auto drop-shadow-lg"
               />
             </Link>
             <div className="flex-1 flex justify-end">
               <UserMenu />
             </div>
           </div>
-          <h2 className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-8">
-            VC Pipeline Management Platform
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-700 to-gray-900 dark:from-gray-300 dark:to-gray-100 bg-clip-text text-transparent mb-8">
+            Private Equity Platform
           </h2>
         </div>
 
@@ -86,10 +86,10 @@ export default function HomePage() {
           <div className="mb-12">
             {/* AI-Synthesized Answer */}
             {searchAnswer && !isSearching && (
-              <div className="mb-6 rounded-xl shadow-sm p-6 border" style={{ backgroundColor: '#ffffff', borderColor: '#e5e5e5' }}>
+              <div className="mb-6 rounded-xl shadow-lg p-6 border bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950" style={{ borderColor: '#e5e5e5' }}>
                 <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 dark:text-blue-400 font-semibold text-sm">AI</span>
+                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
+                    <span className="text-white font-bold text-sm">AI</span>
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-3">
@@ -122,7 +122,7 @@ export default function HomePage() {
                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Sources:</p>
                         <div className="flex flex-wrap gap-1">
                           {searchSources.slice(0, 5).map((source, index) => (
-                            <span key={index} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded">
+                            <span key={index} className="px-2 py-1 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-gray-700 dark:text-gray-200 text-xs rounded-md font-medium">
                               {source}
                             </span>
                           ))}
@@ -140,13 +140,13 @@ export default function HomePage() {
             )}
 
             {/* Document Sources */}
-            <div className="rounded-xl shadow-sm p-6 border" style={{ backgroundColor: '#ffffff', borderColor: '#e5e5e5' }}>
+            <div className="rounded-xl shadow-lg p-6 border bg-white dark:bg-gray-800" style={{ borderColor: '#e5e5e5' }}>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                Search Results ({searchResults.length} documents found)
+                Search Results ({searchResults.length} {searchResults.length === 1 ? 'document' : 'documents'} found)
               </h3>
               {isSearching ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 border-t-blue-600"></div>
                   <span className="ml-3 text-gray-600 dark:text-gray-400">Searching portfolio...</span>
                 </div>
               ) : searchResults.length === 0 ? (
@@ -155,17 +155,17 @@ export default function HomePage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {searchResults.map((result) => (
-                    <div key={result.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  {searchResults.slice(0, 5).map((result) => (
+                    <div key={result.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 bg-gradient-to-r from-transparent to-transparent hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-950/20 dark:hover:to-indigo-950/20">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <h4 className="font-semibold text-gray-900 dark:text-white">{result.title}</h4>
-                            <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-full">
+                            <span className="px-2 py-1 bg-gradient-to-r from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 text-blue-700 dark:text-blue-300 text-xs rounded-full font-medium">
                               {result.documentType || 'Document'}
                             </span>
                             {result.industry && (
-                              <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded-full">
+                              <span className="px-2 py-1 bg-gradient-to-r from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 text-purple-700 dark:text-purple-300 text-xs rounded-full font-medium">
                                 {result.industry}
                               </span>
                             )}
@@ -186,7 +186,7 @@ export default function HomePage() {
 
                           {/* Financial Data Display */}
                           {(result.investmentAmount > 0 || result.preMoneyValuation > 0 || result.ownershipPercentage > 0) && (
-                            <div className="mb-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <div className="mb-3 p-3 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 rounded-lg border border-gray-200 dark:border-gray-700">
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
                                 {result.investmentAmount > 0 && (
                                   <div>
@@ -252,65 +252,40 @@ export default function HomePage() {
                       </div>
                     </div>
                   ))}
+                  {searchResults.length > 5 && (
+                    <div className="mt-4 text-center">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                        Showing top 5 of {searchResults.length} results
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* Portfolio Overview Dashboard */}
-        <div className="mb-12">
-          <div className="rounded-xl shadow-sm border overflow-hidden" style={{ backgroundColor: '#ffffff', borderColor: '#e5e5e5' }}>
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Portfolio Overview
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
-                Real-time portfolio analytics and performance metrics
-              </p>
-            </div>
-            <div className="relative h-[600px] md:h-[700px] lg:h-[800px] xl:h-[900px] rounded-b-xl overflow-hidden" style={{ backgroundColor: '#f8f8f8' }}>
-              {/* Embedded Google Looker Studio Dashboard */}
-              <iframe
-                src="https://lookerstudio.google.com/embed/reporting/61dc78c9-5fdf-4f96-b80c-c8208f2edd7d/page/g23HF"
-                width="100%"
-                height="100%"
-                style={{ border: 'none' }}
-                title="Portfolio Overview Dashboard"
-                className="rounded-b-xl"
-                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-              ></iframe>
-
-              {/* Fallback overlay in case iframe doesn't load */}
-              <div className="absolute top-4 right-4">
-                <a
-                  href="https://lookerstudio.google.com/reporting/61dc78c9-5fdf-4f96-b80c-c8208f2edd7d"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center px-3 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-lg border border-gray-200 dark:border-gray-600"
-                >
-                  <ArrowRight className="w-4 h-4 mr-1" />
-                  Open Full View
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 px-4">
+          <Link
+            href="/portfolio"
+            className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:from-blue-500 hover:to-indigo-600"
+          >
+            View Portfolio Overview
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Link>
           <Link
             href="/companies"
-            className="inline-flex items-center justify-center px-6 py-3 text-lg font-medium rounded-lg transition-all border" style={{ backgroundColor: '#18181b', color: '#fafafa', borderColor: '#18181b' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#27272a'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#18181b'}
+            className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white hover:from-gray-700 hover:to-gray-800"
           >
-            View Portfolio Companies
+            Browse Companies
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
           <Link
             href="/dashboard"
-            className="inline-flex items-center justify-center px-6 py-3 text-lg font-medium rounded-lg transition-all border" style={{ backgroundColor: '#ffffff', color: '#18181b', borderColor: '#d4d4d8' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f4f4f5'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ffffff'; }}
+            className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500"
           >
-            Access Full Dashboard
+            Full Dashboard
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </div>
