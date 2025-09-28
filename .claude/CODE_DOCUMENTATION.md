@@ -1,66 +1,52 @@
-# Verona Capital Private Equity Platform - Code Documentation
+# VC Pipeline Frontend - Code Documentation
 
 ## Project Overview
-AI-powered private equity portfolio management platform built with Next.js 14, integrated with Weaviate vector database and Claude for intelligent document search and analysis. Features a minimalist design with no authentication requirements and streamlined portfolio exploration.
+AI-powered venture capital portfolio management platform built with Next.js 14, integrated with Weaviate vector database for intelligent document search and analysis. Features a minimalist design with streamlined portfolio exploration.
 
-## Architecture & Tech Stack
-
-### Core Technologies
+## Tech Stack
 - **Framework**: Next.js 14.2.32 (App Router)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS with custom Crimson Text font
-- **Database**: Weaviate (Vector Database)
+- **Styling**: Tailwind CSS with Crimson Text font
+- **Database**: Weaviate Vector Database
 - **AI**: Claude API for answer synthesis
 - **Search**: Hybrid BM25 + Semantic Search
-- **Analytics**: Google Looker Studio (embedded dashboard)
+- **Deployment**: Vercel (with password protection)
+- **Analytics**: Google Looker Studio (embedded)
 
-### Data Sources
-- **Primary Collection**: `VC_PE_Claude97_Production` - Real financial documents
-- **Schema**: Investment amounts, valuations, ownership percentages, confidence scores
-- **Document Types**: Term sheets, shareholder agreements, financial reports
-
-## Directory Structure
+## Project Structure
 
 ```
 ├── app/                          # Next.js App Router
 │   ├── api/                      # API routes
-│   │   ├── search-optimized/     # Enhanced search with financial filters
-│   │   ├── extract-companies/    # Company data extraction
+│   │   ├── search-optimized/     # Enhanced search with filters
+│   │   ├── extract-companies/    # Company extraction
 │   │   └── weaviate-schema/      # Schema inspection
-│   ├── companies/                # Portfolio companies listing
-│   │   └── [id]/                 # Individual company pages
-│   ├── dashboard/                # Full analytics dashboard
-│   ├── portfolio/                # Portfolio overview with embedded Looker
-│   └── page.tsx                  # Home page with AI search
+│   ├── companies/                # Portfolio companies
+│   │   └── [id]/                # Individual company pages
+│   ├── dashboard/                # Analytics dashboard
+│   ├── portfolio/                # Portfolio overview
+│   └── page.tsx                  # Home with AI search
 ├── components/                   # React components
 │   └── search/
-│       └── SearchBar.tsx         # Search interface with filters
+│       └── SearchBar.tsx         # Search interface
 ├── lib/                          # Core libraries
-│   ├── claude.ts                 # Claude API integration
+│   ├── claude.ts                 # Claude integration
 │   ├── weaviate-optimized.ts     # Weaviate client
-│   └── portfolio-utils.ts        # Financial calculations
+│   └── portfolio-utils.ts        # Financial utils
 └── public/
-    └── VeronaCapitalLogo.png     # Company logo
+    └── VeronaCapitalLogo.png     # Logo
 ```
 
-## Key Features & Components
+## Key Features
 
-### 1. AI-Powered Search (`/app/page.tsx`)
-**Features**:
-- Natural language queries with example suggestions
-- Claude-synthesized answers with confidence levels
-- Expandable results (show 5 initially, expand to show all)
-- Real-time search with loading states
-- Financial data display with formatting
+### 1. AI-Powered Search (`/`)
+- Natural language queries with Claude synthesis
+- Confidence scoring (high/medium/low)
+- Expandable results (5 initial → show all)
+- Example queries for guidance
+- Real-time financial data extraction
 
-**Example Queries**:
-- "How much did Upswell invest in Riparide?"
-- "Which companies are in our portfolio?"
-- "When was the series B round completed for Advanced Navigation?"
-- "Which company did we most recently invest in?"
-
-### 2. Search Interface (`components/search/SearchBar.tsx`)
-**Advanced Filtering**:
+### 2. Advanced Filtering
 - Company name, industry, document type
 - Investment ranges ($0 - $100M+)
 - Valuation ranges ($0 - $1B+)
@@ -68,161 +54,118 @@ AI-powered private equity portfolio management platform built with Next.js 14, i
 - Confidence threshold filtering
 - Boolean filters (has investment/valuation)
 
-**UI Elements**:
-- Minimalist placeholder: "Ask anything about your portfolio..."
-- Collapsible filter panel
-- Auto-suggestions from example queries
-- Responsive design with mobile support
+### 3. Portfolio Views
+- **Companies List**: Investment metrics, fair values, returns
+- **Portfolio Overview**: Embedded Looker Studio dashboard
+- **Dashboard**: Full analytics view
 
-### 3. Portfolio Overview (`/app/portfolio/page.tsx`)
-**Embedded Analytics**:
-- Google Looker Studio dashboard integration
-- Full-screen responsive iframe
-- Real-time portfolio metrics
-- External link for full dashboard access
+### 4. Design System
 
-### 4. Companies List (`/app/companies/page.tsx`)
-**Portfolio Display**:
-- Total investment, fair value, and return metrics
-- Company cards with performance indicators
-- Financial data extraction from documents
-- Industry and stage categorization
-- Performance calculation (positive/negative/neutral)
+**Colors**:
+- Background: `#fbf9f5` (warm off-white)
+- Primary text: `#18181b` (near black)
+- Secondary: `#71717a` (gray)
+- Borders: `#e4e4e7` (light gray)
+- Accent: `#3b82f6` (blue hover)
 
-### 5. UI Design System
-
-**Color Palette**:
-- Background: #fbf9f5 (warm off-white)
-- Primary text: #18181b (near black)
-- Secondary text: #71717a (gray)
-- Borders: #e4e4e7 (light gray)
-- Hover accent: #3b82f6 (blue)
-
-**Button Styles** (Minimalist - all same style):
-```css
-- Background: transparent → black on hover
-- Border: 2px solid gray → blue on hover
-- Padding: px-8 py-4 (consistent sizing)
-- Font: text-lg font-semibold
-- Effects: shadow-lg, hover:shadow-xl, transform on hover
-```
-
-**Typography**:
-- Font: Crimson Text (Google Fonts)
-- Headings: Gradient text effects
-- Body: Standard weight with good readability
+**Components**:
+- Minimalist buttons (transparent → black hover)
+- Consistent padding: `px-8 py-4`
+- Shadow effects on interaction
+- Gradient text for headings
 
 ## API Endpoints
 
 ### `/api/search-optimized` (POST)
-```typescript
-Request: {
-  query: string
-  filters?: {
-    company?: string
-    industry?: string
-    documentType?: string
-    investmentRange?: { min: number, max: number }
-    valuationRange?: { min: number, max: number }
-    ownershipRange?: { min: number, max: number }
-    minConfidence?: number
-    hasInvestmentAmount?: boolean
-    hasValuation?: boolean
-  }
-  searchType: 'hybrid' | 'semantic' | 'bm25'
-  useOptimizedCollection: boolean
-}
-
-Response: {
-  success: boolean
-  results: SearchResult[]
-  aiAnswer: string
-  confidence: 'high' | 'medium' | 'low'
-  sources: string[]
-}
-```
+Handles hybrid search with financial filtering and AI synthesis.
 
 ### `/api/extract-companies` (GET)
-Returns enriched company data with calculated financials
+Returns enriched company data with calculated financials.
+
+### `/api/weaviate-schema` (GET)
+Inspects available Weaviate collections.
 
 ## Data Schema
 
+### Weaviate Collection
+- **Primary**: `VC_PE_Claude97_Production`
+- **Fields**: Investment amounts, valuations, ownership percentages
+- **Documents**: Term sheets, shareholder agreements, financial reports
+
 ### Search Result Structure
 ```typescript
-interface SearchResult {
+{
   id: string
   title: string
   company: string
   snippet: string
   documentType: string
-  industry?: string
-
-  // Financial Fields
   investmentAmount: number
   preMoneyValuation: number
   postMoneyValuation: number
   fairValue: number
   ownershipPercentage: number
-
-  // Metadata
   extractionConfidence: number
-  extractionTimestamp: string
   score: number
-
-  // Display Flags
-  hasInvestmentAmount: boolean
-  hasValuation: boolean
 }
 ```
 
-## Environment Configuration
+## Environment Variables
 
 ```env
-ANTHROPIC_API_KEY=sk-ant-api03-...     # Claude API
-WEAVIATE_API_KEY=...                   # Weaviate cloud
-OPENAI_API_KEY=...                     # Embeddings (optional)
+# Weaviate Configuration
+NEXT_PUBLIC_WEAVIATE_SCHEME=https
+NEXT_PUBLIC_WEAVIATE_HOST=[your-host]
+WEAVIATE_API_KEY=[your-key]
+
+# AI Services
+OPENAI_API_KEY=[optional-embeddings]
+ANTHROPIC_API_KEY=[claude-api]
+
+# Collection
+NEXT_PUBLIC_OPTIMIZED_COLLECTION_NAME=VC_PE_Claude97_Production
+
+# Authentication (Vercel)
+JWT_SECRET=[for-future-custom-auth]
 ```
 
-## Development Commands
+## Deployment
 
+### Vercel Deployment
+- **Production URL**: https://vc-pipeline-frontend.vercel.app
+- **Password Protection**: Enabled via Vercel dashboard
+- **Auto-deploy**: On push to main branch
+- **Environment**: Production variables configured
+
+### Build Commands
 ```bash
-npm run dev          # Start development server (port 3001 if 3000 in use)
+npm run dev          # Development server
 npm run build        # Production build
-npm run lint         # ESLint checking
+npm run lint         # ESLint
 npm run typecheck    # TypeScript validation
+vercel --prod        # Deploy to production
 ```
 
-## Recent Updates
+## Recent Changes
+- Removed authentication system (using Vercel's built-in)
+- Deployed to Vercel with environment variables
+- Simplified UI with unified button styling
+- Enhanced search with "Show more" functionality
+- Cleaned build cache and fixed deployment issues
+- Added `.env.production` for deployment config
 
-### UI/UX Improvements
-- Removed authentication system entirely
-- Unified button styling (minimalist white/transparent)
-- Simplified search placeholder text
-- Added "Show more" functionality for search results
-- Updated example queries to be more relevant
-- Removed "venture capital" references for simplicity
-- Centered logo without user menu
-
-### Technical Changes
-- Removed UserMenu component
-- Deleted auth-related files and routes
-- Simplified header layouts
-- Enhanced search result expansion/collapse
-- Updated button hover states for consistency
-
-## Performance Considerations
-
-- Weaviate hybrid search for optimal relevance
-- Claude API with low temperature (0.1) for factual responses
-- Result limiting (5 initial, expand on demand)
-- Efficient GraphQL queries
-- Static asset optimization
-
-## Error Handling
-
-- Graceful fallbacks for API failures
-- User-friendly error messages
+## Performance & Error Handling
+- Weaviate hybrid search for relevance
+- Claude API with low temperature (0.1)
+- Result limiting for performance
+- Graceful API failure handling
 - Loading states for async operations
-- Empty state handling for no results
+- Empty state handling
 
-This documentation provides a complete understanding of the Verona Capital platform's architecture, design, and functionality for efficient development and maintenance.
+## Security
+- Password protection via Vercel
+- Environment variables secured in Vercel dashboard
+- No hardcoded secrets in codebase
+- HTTPS enforced on production
+
+This documentation provides a complete technical overview for maintaining and extending the VC Pipeline Frontend application.

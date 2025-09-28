@@ -28,10 +28,13 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+.env.production
 
 # vercel
 .vercel
+add-vercel-env.bat
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.vercel

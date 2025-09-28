@@ -1,92 +1,83 @@
-# Verona Capital Private Equity Platform - Project TODOs
+# VC Pipeline Frontend - Project TODOs
 
 ## Recently Completed ✅
-- ✅ Removed authentication system entirely (UserMenu, auth routes, sign-in)
-- ✅ Unified all button styling to minimalist design (white/transparent with border)
-- ✅ Simplified search placeholder to "Ask anything about your portfolio..."
-- ✅ Added "Show more/less" functionality for search results
-- ✅ Updated example queries to be more relevant to portfolio searches
-- ✅ Removed "venture capital" references for cleaner messaging
-- ✅ Centered logo headers without user menu
+- ✅ Deployed to Vercel production (https://vc-pipeline-frontend.vercel.app)
+- ✅ Configured environment variables in Vercel
+- ✅ Enabled Vercel password protection
+- ✅ Fixed SessionProvider build error
+- ✅ Created .env.production for deployment
+- ✅ Cleaned Next.js build cache
 
 ## High Priority 🔴
 
-### Search & UX Improvements
-- [ ] Improve search result loading states and animations
-- [ ] Add search result highlighting for matched terms
-- [ ] Implement search result filtering after initial search
-- [ ] Add "No results" suggestions for failed searches
+### Deployment & Infrastructure
+- [ ] Monitor production logs for runtime errors
+- [ ] Set up custom domain if needed
+- [ ] Configure preview deployments for branches
+- [ ] Set up GitHub Actions for automated testing
 
-### API & Backend
-- [ ] Update legacy `/api/search` endpoint to match optimized version
-- [ ] Fix `/api/extract-companies` to use VC_PE_Claude97_Production collection
-- [ ] Implement proper error boundaries for API failures
-- [ ] Add response caching for frequently searched queries
+### API Fixes
+- [ ] Fix VC_PE_Voyage_Binary_Production collection reference errors
+- [ ] Update extract-companies API to use correct collection
+- [ ] Add proper error handling for missing Weaviate collections
+- [ ] Implement API rate limiting
 
 ## Medium Priority 🟡
 
-### Portfolio Features
-- [ ] Add portfolio company detail pages with full information
-- [ ] Implement document viewer for source documents
-- [ ] Create investment timeline visualization
-- [ ] Add portfolio performance tracking over time
+### Search Improvements
+- [ ] Add search result caching
+- [ ] Implement search analytics tracking
+- [ ] Add search suggestions based on history
+- [ ] Improve error messages for failed searches
 
-### Search Enhancements
-- [ ] Add voice search capability
-- [ ] Implement search history for users
-- [ ] Create saved searches functionality
-- [ ] Add export search results to CSV/PDF
+### Performance
+- [ ] Optimize initial page load time
+- [ ] Add image optimization for logo
+- [ ] Implement lazy loading for heavy components
+- [ ] Add performance monitoring (Vercel Analytics)
 
-### UI/UX Polish
-- [ ] Add smooth page transitions
-- [ ] Implement skeleton loaders for better perceived performance
-- [ ] Add tooltips for complex financial terms
-- [ ] Create mobile-optimized responsive design
+### UI/UX
+- [ ] Add loading skeletons for better perceived performance
+- [ ] Improve mobile responsive design
+- [ ] Add keyboard shortcuts for search
+- [ ] Create dark mode toggle
 
 ## Low Priority 🔵
 
-### Analytics Dashboard
-- [ ] Create custom analytics beyond Looker Studio
-- [ ] Add portfolio comparison tools
-- [ ] Implement benchmarking against market indices
-- [ ] Create automated report generation
+### Features
+- [ ] Add export functionality for search results
+- [ ] Implement saved searches
+- [ ] Create user preferences storage
+- [ ] Add print-friendly views
 
-### Advanced Features
-- [ ] Add AI-powered investment recommendations
-- [ ] Implement document upload and analysis
-- [ ] Create portfolio simulation tools
-- [ ] Add collaboration features for team members
+### Documentation
+- [ ] Create user guide
+- [ ] Add API documentation
+- [ ] Document deployment process
+- [ ] Create troubleshooting guide
 
 ## Technical Debt
 
+### Code Quality
+- [ ] Add ESLint rules for code consistency
+- [ ] Implement TypeScript strict mode
+- [ ] Remove unused dependencies
+- [ ] Refactor large components
+
 ### Testing
-- [ ] Add unit tests for search functions
-- [ ] Implement integration tests for API endpoints
-- [ ] Create E2E tests for critical user flows
-- [ ] Set up automated testing in CI/CD
+- [ ] Add unit tests for utility functions
+- [ ] Create integration tests for API routes
+- [ ] Add E2E tests with Playwright
+- [ ] Set up test coverage reporting
 
-### Performance
-- [ ] Optimize bundle size with code splitting
-- [ ] Implement image lazy loading
-- [ ] Add service worker for offline support
-- [ ] Optimize Weaviate queries for speed
+## Current Focus
+1. Monitor production deployment for issues
+2. Fix API collection reference errors
+3. Improve search performance
+4. Add basic error tracking
 
-### Infrastructure
-- [ ] Set up proper logging and monitoring
-- [ ] Implement health checks for production
-- [ ] Create automated backup procedures
-- [ ] Set up staging environment
-
-## Current Sprint Focus
-1. Improve search result UX with better loading states
-2. Fix company extraction API endpoint
-3. Add mobile responsive improvements
-4. Implement basic error boundaries
-5. Create initial test suite
-
-## Design Decisions
-- **Minimalist approach**: Clean, uncluttered interface
-- **No authentication**: Open access for all users
-- **Consistent buttons**: All CTAs use same white/transparent style
-- **Simple messaging**: Removed technical jargon where possible
-- **Focus on search**: Primary interaction through natural language queries
+## Notes
+- Production URL: https://vc-pipeline-frontend.vercel.app
+- Using Vercel's built-in password protection
+- Environment variables configured in Vercel dashboard
+- Auto-deploy enabled for main branch
