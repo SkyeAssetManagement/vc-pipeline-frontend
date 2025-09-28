@@ -12,17 +12,15 @@ interface SearchBarProps {
 }
 
 const EXAMPLE_QUERIES = [
-  "What are Advanced Navigation's Series B investment terms?",
-  "Show me Loopit's subscription agreement details",
-  "What is the liquidation preference structure?",
-  "Find board composition requirements",
-  "What are the anti-dilution provisions?",
-  "Show me all term sheets with liquidation preferences"
+  "How much did Upswell invest in Riparide?",
+  "Which companies are in our portfolio?",
+  "When was the series B round completed for Advanced Navigation?",
+  "Which company did we most recently invest in?"
 ];
 
 export const SearchBar: React.FC<SearchBarProps> = ({ 
   onSearch, 
-  placeholder = "Ask anything about your portfolio... e.g., 'Show me Series A companies with ARR > $1M'",
+  placeholder = "Ask anything about your portfolio...",
   enableFilters = true
 }) => {
   const [query, setQuery] = useState('');

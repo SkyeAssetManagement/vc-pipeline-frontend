@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { ArrowRight, Search, BarChart3, FileText } from 'lucide-react'
 import { SearchBar } from '@/components/search/SearchBar'
-import { UserMenu } from '@/components/auth/UserMenu'
 import { useState } from 'react'
 
 export default function HomePage() {
@@ -12,6 +11,7 @@ export default function HomePage() {
   const [searchAnswer, setSearchAnswer] = useState<string>('');
   const [searchConfidence, setSearchConfidence] = useState<'high' | 'medium' | 'low'>('low');
   const [searchSources, setSearchSources] = useState<string[]>([]);
+  const [showAllResults, setShowAllResults] = useState(false);
 
   const handleSearch = async (query: string, filters?: any) => {
     console.log('Search query:', query, 'Filters:', filters);
@@ -39,6 +39,7 @@ export default function HomePage() {
         setSearchAnswer(data.aiAnswer || '');
         setSearchConfidence(data.confidence || 'low');
         setSearchSources(data.sources || []);
+        setShowAllResults(false); // Reset to showing only 5 when new search is performed
       } else {
         console.error('Search failed:', data.error);
         setSearchResults([]);
@@ -58,8 +59,7 @@ export default function HomePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex-1"></div>
+          <div className="flex justify-center mb-6">
             <Link href="/" className="hover:scale-105 transition-transform duration-200">
               <img
                 src="/VeronaCapitalLogo.png"
@@ -67,9 +67,6 @@ export default function HomePage() {
                 className="h-20 mx-auto drop-shadow-lg"
               />
             </Link>
-            <div className="flex-1 flex justify-end">
-              <UserMenu />
-            </div>
           </div>
           <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-700 to-gray-900 dark:from-gray-300 dark:to-gray-100 bg-clip-text text-transparent mb-8">
             Private Equity Platform
@@ -155,7 +152,7 @@ export default function HomePage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {searchResults.slice(0, 5).map((result) => (
+                  {searchResults.slice(0, showAllResults ? searchResults.length : 5).map((result) => (
                     <div key={result.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 bg-gradient-to-r from-transparent to-transparent hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-950/20 dark:hover:to-indigo-950/20">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -253,9 +250,32 @@ export default function HomePage() {
                     </div>
                   ))}
                   {searchResults.length > 5 && (
-                    <div className="mt-4 text-center">
-                      <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-                        Showing top 5 of {searchResults.length} results
+                    <div className="mt-6 text-center">
+                      <button
+                        onClick={() => setShowAllResults(!showAllResults)}
+                        className="inline-flex items-center justify-center px-6 py-2 text-sm font-medium rounded-lg transition-all duration-200 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md"
+                      >
+                        {showAllResults ? (
+                          <>
+                            Show less
+                            <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                          </>
+                        ) : (
+                          <>
+                            Show {searchResults.length - 5} more {searchResults.length - 5 === 1 ? 'result' : 'results'}
+                            <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </>
+                        )}
+                      </button>
+                      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        {showAllResults
+                          ? `Showing all ${searchResults.length} results`
+                          : `Showing 5 of ${searchResults.length} results`
+                        }
                       </p>
                     </div>
                   )}
@@ -269,14 +289,14 @@ export default function HomePage() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 px-4">
           <Link
             href="/portfolio"
-            className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:from-blue-500 hover:to-indigo-600"
+            className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500"
           >
             View Portfolio Overview
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
           <Link
             href="/companies"
-            className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white hover:from-gray-700 hover:to-gray-800"
+            className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500"
           >
             Browse Companies
             <ArrowRight className="ml-2 h-5 w-5" />

@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { ArrowRight, ArrowLeft } from 'lucide-react'
-import { UserMenu } from '@/components/auth/UserMenu'
 
 export default function PortfolioPage() {
   return (
@@ -10,8 +9,8 @@ export default function PortfolioPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex-1 flex justify-start">
+          <div className="mb-6">
+            <div className="flex justify-start mb-4">
               <Link
                 href="/"
                 className="inline-flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
@@ -20,15 +19,14 @@ export default function PortfolioPage() {
                 Back to Home
               </Link>
             </div>
-            <Link href="/" className="hover:scale-105 transition-transform duration-200">
-              <img
-                src="/VeronaCapitalLogo.png"
-                alt="Verona Capital"
-                className="h-20 mx-auto drop-shadow-lg"
-              />
-            </Link>
-            <div className="flex-1 flex justify-end">
-              <UserMenu />
+            <div className="flex justify-center">
+              <Link href="/" className="hover:scale-105 transition-transform duration-200">
+                <img
+                  src="/VeronaCapitalLogo.png"
+                  alt="Verona Capital"
+                  className="h-20 mx-auto drop-shadow-lg"
+                />
+              </Link>
             </div>
           </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-700 to-gray-900 dark:from-gray-300 dark:to-gray-100 bg-clip-text text-transparent mb-4">
@@ -74,7 +72,7 @@ export default function PortfolioPage() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             href="/companies"
-            className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white hover:from-gray-700 hover:to-gray-800"
+            className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500"
           >
             View Portfolio Companies
             <ArrowRight className="ml-2 h-5 w-5" />

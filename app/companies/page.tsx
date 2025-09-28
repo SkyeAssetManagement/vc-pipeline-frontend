@@ -121,7 +121,7 @@ export default function CompaniesListPage() {
             Portfolio Companies
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400">
-            Explore detailed information about each company in our venture capital portfolio
+            Explore detailed information about each company in our portfolio
           </p>
         </div>
 

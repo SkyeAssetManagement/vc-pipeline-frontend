@@ -1,130 +1,92 @@
 # Verona Capital Private Equity Platform - Project TODOs
 
 ## Recently Completed ✅
-- ✅ Enhanced UI with modern design system (gradients, animations, shadows)
-- ✅ Fixed Verona Capital logo display with improved styling
-- ✅ Limited search results display to top 5 with "show more" indicator
-- ✅ Created dedicated Portfolio Overview page (/portfolio)
-- ✅ Updated heading from "VC Pipeline" to "Private Equity Platform"
-- ✅ Integrated VC_PE_Claude97_Production collection with real financial data
-- ✅ Updated search API to use Claude Sonnet 4 model
-- ✅ Enhanced search UI with advanced financial filters
-- ✅ Production build testing and TypeScript error fixes
+- ✅ Removed authentication system entirely (UserMenu, auth routes, sign-in)
+- ✅ Unified all button styling to minimalist design (white/transparent with border)
+- ✅ Simplified search placeholder to "Ask anything about your portfolio..."
+- ✅ Added "Show more/less" functionality for search results
+- ✅ Updated example queries to be more relevant to portfolio searches
+- ✅ Removed "venture capital" references for cleaner messaging
+- ✅ Centered logo headers without user menu
 
 ## High Priority 🔴
+
+### Search & UX Improvements
+- [ ] Improve search result loading states and animations
+- [ ] Add search result highlighting for matched terms
+- [ ] Implement search result filtering after initial search
+- [ ] Add "No results" suggestions for failed searches
 
 ### API & Backend
 - [ ] Update legacy `/api/search` endpoint to match optimized version
 - [ ] Fix `/api/extract-companies` to use VC_PE_Claude97_Production collection
-- [ ] Add comprehensive error handling and loading states
-- [ ] Implement search result caching for improved performance
-
-### User Experience
-- [ ] Add loading states for all search operations
-- [ ] Implement pagination for search results beyond top 5
-- [ ] Add keyboard shortcuts for power users
-- [ ] Create responsive design improvements for mobile devices
+- [ ] Implement proper error boundaries for API failures
+- [ ] Add response caching for frequently searched queries
 
 ## Medium Priority 🟡
 
-### Search & Filtering
-- [ ] Add date range filtering for documents
-- [ ] Implement company size/stage filtering
-- [ ] Add sorting options (by relevance, date, amount)
-- [ ] Create search suggestions and autocomplete
+### Portfolio Features
+- [ ] Add portfolio company detail pages with full information
+- [ ] Implement document viewer for source documents
+- [ ] Create investment timeline visualization
+- [ ] Add portfolio performance tracking over time
 
-### Portfolio Dashboard
-- [ ] Enhance portfolio overview with interactive charts
-- [ ] Add portfolio performance metrics and KPIs
-- [ ] Implement custom date range selections
-- [ ] Create exportable reports functionality
+### Search Enhancements
+- [ ] Add voice search capability
+- [ ] Implement search history for users
+- [ ] Create saved searches functionality
+- [ ] Add export search results to CSV/PDF
 
-### Navigation & Layout
-- [ ] Add breadcrumb navigation
-- [ ] Implement consistent navigation menu across pages
-- [ ] Add dark mode toggle
-- [ ] Create sticky header with scroll effects
+### UI/UX Polish
+- [ ] Add smooth page transitions
+- [ ] Implement skeleton loaders for better perceived performance
+- [ ] Add tooltips for complex financial terms
+- [ ] Create mobile-optimized responsive design
 
 ## Low Priority 🔵
 
+### Analytics Dashboard
+- [ ] Create custom analytics beyond Looker Studio
+- [ ] Add portfolio comparison tools
+- [ ] Implement benchmarking against market indices
+- [ ] Create automated report generation
+
 ### Advanced Features
-- [ ] Add search history and saved searches
-- [ ] Implement bulk actions for search results
-- [ ] Create guided tour for new users
-- [ ] Add document preview and annotation
+- [ ] Add AI-powered investment recommendations
+- [ ] Implement document upload and analysis
+- [ ] Create portfolio simulation tools
+- [ ] Add collaboration features for team members
 
-### Analytics & Insights
-- [ ] Add user analytics tracking
-- [ ] Implement search query analytics
-- [ ] Create automated reporting dashboards
-- [ ] Add trend analysis and predictions
+## Technical Debt
 
-## Technical Improvements
-
-### Code Quality
-- [ ] Add comprehensive unit tests for search functions
+### Testing
+- [ ] Add unit tests for search functions
 - [ ] Implement integration tests for API endpoints
-- [ ] Add E2E tests for critical user flows
-- [ ] Set up automated testing pipeline
+- [ ] Create E2E tests for critical user flows
+- [ ] Set up automated testing in CI/CD
 
 ### Performance
-- [ ] Implement proper caching strategy (Redis/Memcached)
-- [ ] Optimize bundle size and code splitting
-- [ ] Add service worker for offline functionality
-- [ ] Implement lazy loading for large datasets
+- [ ] Optimize bundle size with code splitting
+- [ ] Implement image lazy loading
+- [ ] Add service worker for offline support
+- [ ] Optimize Weaviate queries for speed
 
-### Security
-- [ ] Implement proper input sanitization
-- [ ] Add API authentication/authorization middleware
-- [ ] Set up CORS policies for production
-- [ ] Add request logging and monitoring
-
-## Infrastructure & DevOps
-
-### Development Environment
-- [ ] Set up Docker containerization
-- [ ] Add pre-commit hooks for code quality
-- [ ] Create local development setup scripts
-- [ ] Set up automated dependency updates
-
-### Production Deployment
-- [ ] Set up CI/CD pipeline
-- [ ] Configure production environment variables
-- [ ] Implement health checks and monitoring
-- [ ] Create backup and disaster recovery plan
-
-## Research & Planning 🟢
-
-### AI & ML Enhancements
-- [ ] Add sentiment analysis for documents
-- [ ] Implement natural language query processing
-- [ ] Create automated investment insights
-- [ ] Add smart document recommendations
-
-### Document Management
-- [ ] Add document upload and ingestion pipeline
-- [ ] Implement document versioning and history
-- [ ] Add OCR capabilities for scanned documents
-- [ ] Create document tagging and categorization
-
-### Collaboration Features
-- [ ] Add user roles and permissions system
-- [ ] Implement commenting on search results
-- [ ] Create shareable search links
-- [ ] Add team workspace functionality
-
----
+### Infrastructure
+- [ ] Set up proper logging and monitoring
+- [ ] Implement health checks for production
+- [ ] Create automated backup procedures
+- [ ] Set up staging environment
 
 ## Current Sprint Focus
-1. Add loading states and error handling for search operations
-2. Implement pagination or "load more" functionality for search results
-3. Fix legacy API endpoints to use new collection
-4. Add comprehensive unit tests for core search functionality
-5. Set up production deployment pipeline
+1. Improve search result UX with better loading states
+2. Fix company extraction API endpoint
+3. Add mobile responsive improvements
+4. Implement basic error boundaries
+5. Create initial test suite
 
-## Design System Guidelines
-- **Primary Colors**: Blue/Indigo gradients for primary actions
-- **Background**: Warm off-white (#fbf9f5) for main background
-- **Cards**: White with subtle shadows and gradient borders
-- **Animations**: Smooth hover effects with transform animations
-- **Typography**: Gradient text effects for headings, clean sans-serif for body
+## Design Decisions
+- **Minimalist approach**: Clean, uncluttered interface
+- **No authentication**: Open access for all users
+- **Consistent buttons**: All CTAs use same white/transparent style
+- **Simple messaging**: Removed technical jargon where possible
+- **Focus on search**: Primary interaction through natural language queries
