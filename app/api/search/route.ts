@@ -67,7 +67,13 @@ export async function POST(request: NextRequest) {
         feature: 'document-search',
         companyName: filters?.company,
         documentType: filters?.documentType,
-      }
+      },
+      (results) => ({
+        // Score the search results
+        resultCount: Math.min((Array.isArray(results) ? results.length : 0) / 20, 1), // Max score at 20 results
+        hasResults: Array.isArray(results) && results.length > 0 ? 1 : 0,
+        searchQuality: Array.isArray(results) && results.length > 10 ? 1 : results.length / 10,
+      })
     );
 
     // Ensure searchResults is an array
