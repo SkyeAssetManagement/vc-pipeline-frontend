@@ -59,43 +59,41 @@ export async function tracedOperation<T>(
 
   return logger.traced(
     async (span: any) => {
-      // Log input and metadata at the start
-      const initialLog = {
-        input: metadata?.input,
-        metadata: {
-          ...metadata,
-          timestamp: new Date().toISOString(),
-          environment: process.env.NODE_ENV || 'development',
-          deploymentUrl,
-          isProduction,
-          vercelEnv: process.env.VERCEL_ENV,
-          vercelRegion: process.env.VERCEL_REGION,
-        },
-      };
-
-      // Don't log yet, we'll log everything together with scores
-
       try {
         const result = await callback();
         const endTime = Date.now();
         const responseTime = endTime - startTime;
 
-        // Calculate automatic scores
-        let scores: SpanScores = {
-          responseTime: Math.min(1, 1000 / responseTime), // Score based on response time (1 second = 1.0)
+        // Calculate all scores
+        let allScores: Record<string, number> = {
+          responseTime: Math.min(1, 1000 / responseTime),
         };
 
         // Add custom scores if provided
         if (calculateScores) {
           const customScores = calculateScores(result);
-          scores = { ...scores, ...customScores };
+          // Ensure all scores are numbers
+          Object.entries(customScores).forEach(([key, value]) => {
+            if (typeof value === 'number') {
+              allScores[key] = value;
+            }
+          });
         }
 
-        // Log everything including scores in a single call
+        // Log with Braintrust's expected format
         span.log({
-          ...initialLog,
+          input: metadata?.input,
           output: result,
-          scores: scores,  // Scores at top level
+          scores: allScores,
+          metadata: {
+            ...metadata,
+            timestamp: new Date().toISOString(),
+            environment: process.env.NODE_ENV || 'development',
+            deploymentUrl,
+            isProduction,
+            vercelEnv: process.env.VERCEL_ENV,
+            vercelRegion: process.env.VERCEL_REGION,
+          },
           metrics: {
             success: 1,
             responseTimeMs: responseTime,
@@ -108,12 +106,21 @@ export async function tracedOperation<T>(
         const endTime = Date.now();
 
         span.log({
-          ...initialLog,
+          input: metadata?.input,
           error: error instanceof Error ? error.message : String(error),
           errorStack: error instanceof Error ? error.stack : undefined,
           scores: {
             success: 0,
             errorOccurred: 1,
+          },
+          metadata: {
+            ...metadata,
+            timestamp: new Date().toISOString(),
+            environment: process.env.NODE_ENV || 'development',
+            deploymentUrl,
+            isProduction,
+            vercelEnv: process.env.VERCEL_ENV,
+            vercelRegion: process.env.VERCEL_REGION,
           },
           metrics: {
             success: 0,
