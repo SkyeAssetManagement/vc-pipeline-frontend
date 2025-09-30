@@ -59,8 +59,8 @@ export async function tracedOperation<T>(
 
   return logger.traced(
     async (span: any) => {
-      // Log input and metadata
-      span.log({
+      // Log input and metadata at the start
+      const initialLog = {
         input: metadata?.input,
         metadata: {
           ...metadata,
@@ -71,7 +71,9 @@ export async function tracedOperation<T>(
           vercelEnv: process.env.VERCEL_ENV,
           vercelRegion: process.env.VERCEL_REGION,
         },
-      });
+      };
+
+      // Don't log yet, we'll log everything together with scores
 
       try {
         const result = await callback();
@@ -89,9 +91,11 @@ export async function tracedOperation<T>(
           scores = { ...scores, ...customScores };
         }
 
+        // Log everything including scores in a single call
         span.log({
+          ...initialLog,
           output: result,
-          scores,
+          scores: scores,  // Scores at top level
           metrics: {
             success: 1,
             responseTimeMs: responseTime,
@@ -104,6 +108,7 @@ export async function tracedOperation<T>(
         const endTime = Date.now();
 
         span.log({
+          ...initialLog,
           error: error instanceof Error ? error.message : String(error),
           errorStack: error instanceof Error ? error.stack : undefined,
           scores: {
