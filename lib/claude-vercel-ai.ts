@@ -105,7 +105,7 @@ export class ClaudeVercelService {
           }
         ],
         temperature: 0.1,
-        maxTokens: 1000,
+        maxRetries: 3,
       });
 
       for await (const chunk of textStream) {
