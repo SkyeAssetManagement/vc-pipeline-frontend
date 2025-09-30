@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { WeaviateService } from '@/lib/weaviate';
 import { ClaudeService } from '@/lib/claude';
+import { tracedOperation, calculateSearchRelevance, calculateCompleteness } from '@/lib/braintrust-enhanced';
 
 // Function to enhance queries with office investment entities
 function enhanceQueryWithInvestors(query: string): string {
@@ -30,7 +31,7 @@ function enhanceQueryWithInvestors(query: string): string {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { query, filters, searchType = 'hybrid' } = body;
+    const { query, filters, searchType = 'hybrid', userId, sessionId } = body;
 
     if (!query || query.trim().length === 0) {
       return NextResponse.json({
@@ -47,13 +48,27 @@ export async function POST(request: NextRequest) {
     const enhancedQuery = enhanceQueryWithInvestors(query);
     console.log('🔍 Enhanced query:', enhancedQuery);
 
-    // Perform search based on type
-    let searchResults;
-    if (searchType === 'semantic') {
-      searchResults = await WeaviateService.semanticSearch(enhancedQuery, filters);
-    } else {
-      searchResults = await WeaviateService.hybridSearch(enhancedQuery, filters);
-    }
+    // Perform search based on type with tracing
+    let searchResults = await tracedOperation(
+      `weaviate-${searchType}-search`,
+      async () => {
+        if (searchType === 'semantic') {
+          return await WeaviateService.semanticSearch(enhancedQuery, filters);
+        } else {
+          return await WeaviateService.hybridSearch(enhancedQuery, filters);
+        }
+      },
+      {
+        input: enhancedQuery,
+        userId,
+        sessionId,
+        searchType,
+        filters,
+        feature: 'document-search',
+        companyName: filters?.company,
+        documentType: filters?.documentType,
+      }
+    );
 
     // Ensure searchResults is an array
     if (!Array.isArray(searchResults)) {
@@ -102,8 +117,25 @@ export async function POST(request: NextRequest) {
       }))
       .sort((a: any, b: any) => b.averageScore - a.averageScore);
 
-    // Generate AI-synthesized answer using Claude
-    const claudeResponse = await ClaudeService.generateAnswer(query, processedResults, companyGroups);
+    // Generate AI-synthesized answer using Claude with tracing
+    const claudeResponse = await tracedOperation(
+      'claude-generate-answer',
+      async () => await ClaudeService.generateAnswer(query, processedResults, companyGroups),
+      {
+        input: query,
+        userId,
+        sessionId,
+        feature: 'ai-synthesis',
+        resultsCount: processedResults.length,
+        companyCount: companyGroups.length,
+      },
+      (result) => ({
+        relevance: calculateSearchRelevance(query, processedResults, result.confidence),
+        completeness: calculateCompleteness(result.answer, result.sources),
+        confidence: result.confidence || 0,
+        sourceQuality: Math.min(result.sources.length / 5, 1),
+      })
+    );
     const aiAnswer = claudeResponse.answer;
 
     console.log('Search completed:', {
