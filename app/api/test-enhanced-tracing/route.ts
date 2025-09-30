@@ -62,19 +62,19 @@ export async function POST(request: NextRequest) {
         feature: 'enhanced-tracing-test',
         environment: process.env.NODE_ENV || 'development',
       },
-      (result) => {
+      (result: any) => {
         // Calculate custom scores based on the result
         if (testType === 'simple') {
           return {
             success: 1,
-            dataQuality: result.data?.value > 50 ? 1 : 0.5,
+            dataQuality: (result.data?.value ?? 0) > 50 ? 1 : 0.5,
             performance: 0.9,
           };
         } else if (testType === 'complex') {
           return {
             success: 1,
-            completeness: result.steps?.length >= 3 ? 1 : result.steps?.length / 3,
-            totalValue: Math.min(result.totalValue / 100, 1),
+            completeness: (result.steps?.length ?? 0) >= 3 ? 1 : (result.steps?.length ?? 0) / 3,
+            totalValue: Math.min((result.totalValue ?? 0) / 100, 1),
             complexity: 0.8,
           };
         }
