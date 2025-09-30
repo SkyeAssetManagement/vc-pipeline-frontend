@@ -68,12 +68,15 @@ export async function POST(request: NextRequest) {
         companyName: filters?.company,
         documentType: filters?.documentType,
       },
-      (results) => ({
-        // Score the search results
-        resultCount: Math.min((Array.isArray(results) ? results.length : 0) / 20, 1), // Max score at 20 results
-        hasResults: Array.isArray(results) && results.length > 0 ? 1 : 0,
-        searchQuality: Array.isArray(results) && results.length > 10 ? 1 : results.length / 10,
-      })
+      (results) => {
+        const resultCount = Array.isArray(results) ? results.length : 0;
+        return {
+          // Score the search results - ensure all values are valid numbers
+          resultCount: Math.min(resultCount / 20, 1), // Max score at 20 results
+          hasResults: resultCount > 0 ? 1 : 0,
+          searchQuality: resultCount > 10 ? 1 : Math.max(0, resultCount / 10),
+        };
+      }
     );
 
     // Ensure searchResults is an array
@@ -82,7 +85,7 @@ export async function POST(request: NextRequest) {
       searchResults = [];
     }
 
-    // Process and format results
+    // Process and format results (handling both collection schemas)
     const processedResults = searchResults.map((result: any, index: number) => ({
       id: result.chunk_id || `result-${index}`,
       type: 'document',
@@ -91,13 +94,15 @@ export async function POST(request: NextRequest) {
       snippet: result.content ? result.content.substring(0, 200) + '...' : 'No content available',
       content: result.content,
       documentType: result.document_type,
-      sectionType: result.section_type,
-      filePath: result.file_path,
-      roundInfo: result.round_info,
-      score: result._additional?.score || 0,
-      chunkIndex: result.chunk_index,
-      tokenCount: result.token_count,
-      createdAt: result.created_at
+      industry: result.industry,
+      investmentAmount: result.investment_amount,
+      preMoneyValuation: result.pre_money_valuation,
+      postMoneyValuation: result.post_money_valuation,
+      fairValue: result.fair_value,
+      ownershipPercentage: result.ownership_percentage,
+      claudeExtraction: result.claude_extraction,
+      extractionConfidence: result.extraction_confidence,
+      score: result._additional?.score || 0
     }));
 
     // Group results by company for better organization
@@ -136,10 +141,10 @@ export async function POST(request: NextRequest) {
         companyCount: companyGroups.length,
       },
       (result) => ({
-        relevance: calculateSearchRelevance(query, processedResults, result.confidence),
-        completeness: calculateCompleteness(result.answer, result.sources),
+        relevance: calculateSearchRelevance(query, processedResults, result.confidence) || 0,
+        completeness: calculateCompleteness(result.answer || '', result.sources || []) || 0,
         confidenceScore: result.confidence === 'high' ? 1 : result.confidence === 'medium' ? 0.7 : 0.4,
-        sourceQuality: Math.min(result.sources.length / 5, 1),
+        sourceQuality: Math.min((result.sources?.length || 0) / 5, 1),
       })
     );
     const aiAnswer = claudeResponse.answer;

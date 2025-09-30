@@ -64,21 +64,28 @@ export async function tracedOperation<T>(
         const endTime = Date.now();
         const responseTime = endTime - startTime;
 
-        // Calculate all scores
+        // Calculate all scores - ensure valid numbers
+        const responseTimeScore = responseTime > 0 ? Math.min(1, 1000 / responseTime) : 1;
         let allScores: Record<string, number> = {
-          responseTime: Math.min(1, 1000 / responseTime),
+          responseTime: isFinite(responseTimeScore) ? responseTimeScore : 1,
         };
 
         // Add custom scores if provided
         if (calculateScores) {
           const customScores = calculateScores(result);
-          // Ensure all scores are numbers
+          // Ensure all scores are valid finite numbers
           Object.entries(customScores).forEach(([key, value]) => {
-            if (typeof value === 'number') {
-              allScores[key] = value;
+            if (typeof value === 'number' && isFinite(value) && !isNaN(value)) {
+              // Clamp between 0 and 1 for safety
+              allScores[key] = Math.max(0, Math.min(1, value));
+            } else {
+              console.warn(`Invalid score value for ${key}:`, value);
             }
           });
         }
+
+        // Debug log scores
+        console.log('Scores to log:', allScores);
 
         // Log with Braintrust's expected format
         span.log({
@@ -93,11 +100,8 @@ export async function tracedOperation<T>(
             isProduction,
             vercelEnv: process.env.VERCEL_ENV,
             vercelRegion: process.env.VERCEL_REGION,
-          },
-          metrics: {
-            success: 1,
             responseTimeMs: responseTime,
-            timestamp: endTime,
+            timestampMs: endTime,
           },
         });
 
@@ -107,8 +111,10 @@ export async function tracedOperation<T>(
 
         span.log({
           input: metadata?.input,
-          error: error instanceof Error ? error.message : String(error),
-          errorStack: error instanceof Error ? error.stack : undefined,
+          output: {
+            error: error instanceof Error ? error.message : String(error),
+            errorStack: error instanceof Error ? error.stack : undefined,
+          },
           scores: {
             success: 0,
             errorOccurred: 1,
@@ -121,9 +127,6 @@ export async function tracedOperation<T>(
             isProduction,
             vercelEnv: process.env.VERCEL_ENV,
             vercelRegion: process.env.VERCEL_REGION,
-          },
-          metrics: {
-            success: 0,
             responseTimeMs: endTime - startTime,
             errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
           },
@@ -163,7 +166,10 @@ export function calculateSearchRelevance(
   const resultCount = Math.min(results.length / 10, 0.3); // Max 0.3 for 10+ results
   const confidenceScore = confidenceValue * 0.4; // Max 0.4 from confidence
 
-  return hasResults + resultCount + confidenceScore;
+  const score = hasResults + resultCount + confidenceScore;
+
+  // Ensure we return a valid number between 0 and 1
+  return Math.max(0, Math.min(1, score));
 }
 
 // Helper function to calculate answer completeness
@@ -174,10 +180,13 @@ export function calculateCompleteness(
   if (!answer) return 0;
 
   const answerLength = Math.min(answer.length / 500, 0.5); // Max 0.5 for 500+ chars
-  const sourceCount = Math.min(sources.length / 5, 0.3); // Max 0.3 for 5+ sources
+  const sourceCount = Math.min((sources?.length || 0) / 5, 0.3); // Max 0.3 for 5+ sources
   const hasStructure = answer.includes('\n') ? 0.2 : 0; // 0.2 if formatted
 
-  return answerLength + sourceCount + hasStructure;
+  const score = answerLength + sourceCount + hasStructure;
+
+  // Ensure we return a valid number between 0 and 1
+  return Math.max(0, Math.min(1, score));
 }
 
 // Helper to track API endpoint performance
