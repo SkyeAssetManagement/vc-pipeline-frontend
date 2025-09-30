@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
       (result) => ({
         relevance: calculateSearchRelevance(query, processedResults, result.confidence),
         completeness: calculateCompleteness(result.answer, result.sources),
-        confidence: result.confidence || 0,
+        confidenceScore: result.confidence === 'high' ? 1 : result.confidence === 'medium' ? 0.7 : 0.4,
         sourceQuality: Math.min(result.sources.length / 5, 1),
       })
     );

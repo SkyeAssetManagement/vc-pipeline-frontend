@@ -134,14 +134,22 @@ export async function tracedOperation<T>(
 export function calculateSearchRelevance(
   query: string,
   results: any[],
-  confidence?: number
+  confidence?: string | number
 ): number {
   if (!results || results.length === 0) return 0;
+
+  // Convert confidence to numeric value
+  let confidenceValue = 0;
+  if (typeof confidence === 'number') {
+    confidenceValue = confidence;
+  } else if (typeof confidence === 'string') {
+    confidenceValue = confidence === 'high' ? 1 : confidence === 'medium' ? 0.7 : 0.4;
+  }
 
   // Factors for relevance scoring
   const hasResults = results.length > 0 ? 0.3 : 0;
   const resultCount = Math.min(results.length / 10, 0.3); // Max 0.3 for 10+ results
-  const confidenceScore = (confidence || 0) * 0.4; // Max 0.4 from confidence
+  const confidenceScore = confidenceValue * 0.4; // Max 0.4 from confidence
 
   return hasResults + resultCount + confidenceScore;
 }
