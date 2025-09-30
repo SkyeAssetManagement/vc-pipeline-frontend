@@ -54,7 +54,7 @@ export class ClaudeVercelService {
           }
         ],
         temperature: 0.1, // Low temperature for more consistent, factual responses
-        maxTokens: 1000,
+        maxRetries: 3,
       });
 
       // Extract sources from the response
