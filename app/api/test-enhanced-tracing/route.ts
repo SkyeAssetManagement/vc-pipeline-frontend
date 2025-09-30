@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { tracedOperation } from '@/lib/braintrust-enhanced';
 
 export async function POST(request: NextRequest) {
+  const body = await request.json();
+  const { testType = 'simple', userId = 'test-user', sessionId = 'test-session' } = body;
+
   try {
-    const body = await request.json();
-    const { testType = 'simple', userId = 'test-user', sessionId = 'test-session' } = body;
 
     const result = await tracedOperation(
       `test-enhanced-${testType}`,
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
           };
         } else if (testType === 'complex') {
           // Complex operation with multiple steps
-          const steps = [];
+          const steps: Array<{ step: number; value: number }> = [];
 
           for (let i = 1; i <= 3; i++) {
             await tracedOperation(
