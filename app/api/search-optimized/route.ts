@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { OptimizedWeaviateService } from '@/lib/weaviate-optimized';
 import { ClaudeService } from '@/lib/claude';
+import { withBraintrustTracing, logToBraintrust } from '@/lib/braintrust-simple';
 
 // Enhanced query processing for optimized collection
 function enhanceQueryWithContext(query: string): string {
@@ -25,14 +26,18 @@ function enhanceQueryWithContext(query: string): string {
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { 
-      query, 
-      filters, 
-      searchType = 'hybrid',
-      useOptimizedCollection = true 
-    } = body;
+  const body = await request.json();
+
+  return withBraintrustTracing(
+    'search-optimized-api',
+    async () => {
+      try {
+        const {
+          query,
+          filters,
+          searchType = 'hybrid',
+          useOptimizedCollection = true
+        } = body;
 
     if (!query || query.trim().length === 0) {
       return NextResponse.json({
@@ -52,7 +57,8 @@ export async function POST(request: NextRequest) {
 
     // Perform search based on type and collection
     let searchResults;
-    
+    const searchStartTime = Date.now();
+
     if (useOptimizedCollection) {
       if (filters && Object.keys(filters).length > 0) {
         // Use filtered search for optimized collection
@@ -71,6 +77,19 @@ export async function POST(request: NextRequest) {
         searchResults = await WeaviateService.hybridSearch(enhancedQuery, filters);
       }
     }
+
+    // Log Weaviate search metrics
+    logToBraintrust('weaviate-search', {
+      query: enhancedQuery,
+      searchType,
+      useOptimizedCollection,
+      hasFilters: filters && Object.keys(filters).length > 0
+    }, {
+      resultsCount: Array.isArray(searchResults) ? searchResults.length : 0
+    }, undefined, {
+      duration_ms: Date.now() - searchStartTime,
+      results_count: Array.isArray(searchResults) ? searchResults.length : 0
+    });
 
     // Ensure searchResults is an array
     if (!Array.isArray(searchResults)) {
@@ -177,8 +196,24 @@ export async function POST(request: NextRequest) {
       .sort((a: any, b: any) => b.averageScore - a.averageScore);
 
     // Generate AI-synthesized answer using Claude
+    const claudeStartTime = Date.now();
     const claudeResponse = await ClaudeService.generateAnswer(query, processedResults, companyGroups);
     const aiAnswer = claudeResponse.answer;
+
+    // Log Claude generation metrics
+    logToBraintrust('claude-generate-answer', {
+      query,
+      resultsCount: processedResults.length,
+      companiesCount: companyGroups.length
+    }, {
+      answer: aiAnswer,
+      confidence: claudeResponse.confidence,
+      sources: claudeResponse.sources.length
+    }, undefined, {
+      duration_ms: Date.now() - claudeStartTime,
+      answer_length: aiAnswer.length,
+      confidence_score: claudeResponse.confidence === 'high' ? 1 : claudeResponse.confidence === 'medium' ? 0.5 : 0.25
+    });
 
     console.log('Optimized search completed:', {
       resultsCount: processedResults.length,
@@ -217,15 +252,18 @@ export async function POST(request: NextRequest) {
       }
     });
 
-  } catch (error) {
-    console.error('Optimized search API error:', error);
-    
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Search failed',
-      details: process.env.NODE_ENV === 'development' ? error : undefined
-    }, { status: 500 });
-  }
+      } catch (error) {
+        console.error('Optimized search API error:', error);
+
+        return NextResponse.json({
+          success: false,
+          error: error instanceof Error ? error.message : 'Search failed',
+          details: process.env.NODE_ENV === 'development' ? error : undefined
+        }, { status: 500 });
+      }
+    },
+    () => body
+  );
 }
 
 // GET endpoint for testing

@@ -1,8 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { wrapAnthropic } from '@/lib/braintrust';
 
-const anthropic = new Anthropic({
+// Wrap Anthropic client for Braintrust tracing
+const anthropic = wrapAnthropic(new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
-});
+}));
 
 export interface ClaudeResponse {
   answer: string;
