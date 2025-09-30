@@ -1,83 +1,90 @@
 # VC Pipeline Frontend - Project TODOs
 
 ## Recently Completed ✅
-- ✅ Deployed to Vercel production (https://vc-pipeline-frontend.vercel.app)
+- ✅ Integrated Braintrust for AI observability
+- ✅ Added Vercel AI SDK support
+- ✅ Fixed TypeScript build errors (maxTokens → maxRetries)
+- ✅ Implemented proper Braintrust project ID handling
+- ✅ Deployed all changes to Vercel production
 - ✅ Configured environment variables in Vercel
-- ✅ Enabled Vercel password protection
-- ✅ Fixed SessionProvider build error
-- ✅ Created .env.production for deployment
-- ✅ Cleaned Next.js build cache
+- ✅ Enabled SSO protection for deployment
 
 ## High Priority 🔴
 
-### Deployment & Infrastructure
-- [ ] Monitor production logs for runtime errors
-- [ ] Set up custom domain if needed
-- [ ] Configure preview deployments for branches
-- [ ] Set up GitHub Actions for automated testing
+### Braintrust Integration
+- [ ] Add BRAINTRUST_API_KEY to Vercel environment variables
+- [ ] Verify traces appearing in Braintrust dashboard
+- [ ] Set up Braintrust evaluation metrics
+- [ ] Configure alerts for performance degradation
 
-### API Fixes
-- [ ] Fix VC_PE_Voyage_Binary_Production collection reference errors
-- [ ] Update extract-companies API to use correct collection
-- [ ] Add proper error handling for missing Weaviate collections
-- [ ] Implement API rate limiting
+### Production Monitoring
+- [ ] Monitor Braintrust dashboard for trace data
+- [ ] Check for API errors in production logs
+- [ ] Validate search performance metrics
+- [ ] Review AI response quality scores
 
 ## Medium Priority 🟡
 
-### Search Improvements
-- [ ] Add search result caching
-- [ ] Implement search analytics tracking
-- [ ] Add search suggestions based on history
-- [ ] Improve error messages for failed searches
+### Search Enhancements
+- [ ] Add result relevance scoring to Braintrust traces
+- [ ] Implement query performance optimization
+- [ ] Add semantic caching for repeated queries
+- [ ] Create search quality evaluation dataset
 
-### Performance
-- [ ] Optimize initial page load time
-- [ ] Add image optimization for logo
-- [ ] Implement lazy loading for heavy components
-- [ ] Add performance monitoring (Vercel Analytics)
+### AI Improvements
+- [ ] Tune Claude temperature for better consistency
+- [ ] Add fallback for Claude API failures
+- [ ] Implement response streaming for better UX
+- [ ] Add citation quality scoring
 
-### UI/UX
-- [ ] Add loading skeletons for better perceived performance
-- [ ] Improve mobile responsive design
-- [ ] Add keyboard shortcuts for search
-- [ ] Create dark mode toggle
+### Analytics
+- [ ] Connect Braintrust metrics to Looker Studio
+- [ ] Create AI performance dashboard
+- [ ] Add cost tracking for API usage
+- [ ] Implement user behavior analytics
 
 ## Low Priority 🔵
 
-### Features
-- [ ] Add export functionality for search results
-- [ ] Implement saved searches
-- [ ] Create user preferences storage
-- [ ] Add print-friendly views
+### Testing
+- [ ] Add tests for Braintrust integration
+- [ ] Create evaluation datasets for search quality
+- [ ] Implement A/B testing framework
+- [ ] Add load testing for API endpoints
 
 ### Documentation
-- [ ] Create user guide
-- [ ] Add API documentation
-- [ ] Document deployment process
-- [ ] Create troubleshooting guide
+- [ ] Document Braintrust dashboard usage
+- [ ] Create troubleshooting guide for traces
+- [ ] Add API performance benchmarks
+- [ ] Document evaluation metrics
+
+### Features
+- [ ] Add batch search processing
+- [ ] Implement feedback collection for AI responses
+- [ ] Create model comparison framework
+- [ ] Add export for Braintrust metrics
 
 ## Technical Debt
 
 ### Code Quality
-- [ ] Add ESLint rules for code consistency
-- [ ] Implement TypeScript strict mode
-- [ ] Remove unused dependencies
-- [ ] Refactor large components
+- [ ] Refactor Braintrust integration modules
+- [ ] Consolidate AI service implementations
+- [ ] Remove test endpoints from production
+- [ ] Optimize bundle size
 
-### Testing
-- [ ] Add unit tests for utility functions
-- [ ] Create integration tests for API routes
-- [ ] Add E2E tests with Playwright
-- [ ] Set up test coverage reporting
+### Infrastructure
+- [ ] Set up staging environment
+- [ ] Configure CI/CD with test automation
+- [ ] Add health check endpoints
+- [ ] Implement proper secret rotation
 
 ## Current Focus
-1. Monitor production deployment for issues
-2. Fix API collection reference errors
-3. Improve search performance
-4. Add basic error tracking
+1. Add BRAINTRUST_API_KEY to Vercel dashboard
+2. Verify traces are flowing to Braintrust
+3. Monitor AI response quality
+4. Track search performance metrics
 
 ## Notes
-- Production URL: https://vc-pipeline-frontend.vercel.app
-- Using Vercel's built-in password protection
-- Environment variables configured in Vercel dashboard
-- Auto-deploy enabled for main branch
+- Braintrust Project: VeronaAI (ID: 33b48cef-bb63-4500-995b-b4633530045f)
+- Production URL: https://vc-pipeline-frontend-ijjh9akq7-ryanxhart-6889s-projects.vercel.app/
+- Vercel SSO protection enabled
+- Auto-deploy from `clean-portfolio-companies` branch
