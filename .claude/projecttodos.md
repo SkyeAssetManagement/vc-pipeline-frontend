@@ -1,114 +1,126 @@
 # Project TODOs
 
+## Dynamic RAG System
+
+### Completed ✓
+- [x] Implement LLM-driven field extraction without schemas
+- [x] Integrate Voyage-3 embeddings for contextual chunking
+- [x] Process Advanced Navigation & Wonde documents (18 docs)
+- [x] Create verification scripts for collection validation
+
+### Next Steps
+- [ ] Process remaining 8 companies as out-of-sample data
+- [ ] Implement DSPy optimization loop for dynamic extraction
+- [ ] Compare performance vs fixed 97-field schema
+- [ ] Add frontend interface for dynamic collection search
+- [ ] Create batch processing pipeline for all PDFs
+
 ## DSPy Optimization
 
-### Immediate
-- [ ] Collect 50+ training examples to trigger first optimization
-- [ ] Monitor performance metrics after optimization
-- [ ] Test optimization with different query types
+### Training Data
+- [ ] Collect 50+ training examples to trigger optimization
+- [ ] Store high-confidence query results
+- [ ] Implement persistence for training examples
 
-### Enhancements
-- [ ] Implement persistence for training examples (currently in-memory)
-- [ ] Add database storage for optimized pipelines
-- [ ] Create admin UI for manual optimization control
-- [ ] Add export/import for training datasets
+### Integration
+- [ ] Connect dynamic RAG with DSPy optimizer
+- [ ] Add feedback loop from retrieval to extraction
+- [ ] Implement iterative improvement based on search quality
 
-## Performance
+## Search System Enhancement
 
-### Query Optimization
-- [ ] Implement query caching for repeated searches
-- [ ] Add Redis for result caching
-- [ ] Optimize document reranking algorithm
-- [ ] Reduce DSPy initial response time (currently ~30s)
+### Dynamic Collection Integration
+- [ ] Add `DynamicCompaniesComplete` to search endpoints
+- [ ] Create UI toggle for fixed vs dynamic schema search
+- [ ] Display dynamically extracted fields in results
+- [ ] Show field diversity metrics in admin panel
 
-### Infrastructure
-- [ ] Set up proper error monitoring (Sentry)
-- [ ] Add performance monitoring dashboard
-- [ ] Implement rate limiting per user
-- [ ] Set up CDN for static assets
+### Performance
+- [ ] Optimize Voyage-3 embedding generation
+- [ ] Implement caching for dynamic field queries
+- [ ] Add parallel processing for bulk ingestion
+- [ ] Reduce extraction time per document
 
-## Features
+## Data Processing
 
-### Search Enhancements
-- [ ] Add fuzzy matching for company names
-- [ ] Implement query autocomplete from historical searches
-- [ ] Add search history per user
-- [ ] Create saved search functionality
+### Document Ingestion
+- [ ] Complete ingestion of all company documents with Voyage
+- [ ] Add support for Word documents (.docx)
+- [ ] Implement OCR for scanned PDFs
+- [ ] Create incremental update pipeline
 
-### UI/UX
-- [ ] Add dark mode support
-- [ ] Create mobile-responsive design
-- [ ] Add export functionality for search results
-- [ ] Implement result highlighting for matched terms
+### Quality Assurance
+- [ ] Validate extraction accuracy across document types
+- [ ] Compare Voyage-3 vs OpenAI embedding quality
+- [ ] Measure field coverage per document type
+- [ ] Test retrieval precision/recall metrics
 
-## Data & Analytics
-
-### Weaviate
-- [ ] Migrate remaining documents to optimized collection
-- [ ] Set up automated document ingestion pipeline
-- [ ] Add document versioning support
-- [ ] Implement incremental indexing
+## Infrastructure
 
 ### Monitoring
-- [ ] Set up alerting for failed searches
-- [ ] Create dashboard for search analytics
-- [ ] Add user behavior tracking
-- [ ] Implement A/B testing framework
+- [ ] Track dynamic field extraction statistics
+- [ ] Monitor Voyage API usage and costs
+- [ ] Set up alerts for extraction failures
+- [ ] Create dashboard for field diversity metrics
 
-## Security & Compliance
+### Scaling
+- [ ] Optimize for 100+ company processing
+- [ ] Implement queue system for async processing
+- [ ] Add distributed processing support
+- [ ] Set up auto-scaling for heavy loads
 
-### Authentication
-- [ ] Add role-based access control
-- [ ] Implement API key management
-- [ ] Add audit logging for sensitive operations
-- [ ] Set up data retention policies
+## Frontend Updates
+
+### UI Components
+- [ ] Display extracted fields in search results
+- [ ] Add field filtering capabilities
+- [ ] Show confidence scores for dynamic extractions
+- [ ] Create field exploration interface
+
+### Visualization
+- [ ] Build field frequency charts
+- [ ] Create document type distribution view
+- [ ] Add extraction quality metrics display
+- [ ] Implement field relationship graph
+
+## Testing & Validation
+
+### Dynamic RAG Testing
+- [ ] Create test suite for various document types
+- [ ] Validate extraction consistency
+- [ ] Test edge cases (empty docs, corrupted PDFs)
+- [ ] Benchmark against fixed schema approach
+
+### Integration Tests
+- [ ] Test end-to-end pipeline with Voyage
+- [ ] Validate search quality with dynamic fields
+- [ ] Test DSPy optimization with dynamic data
+- [ ] Cross-validate extraction results
 
 ## Documentation
 
-### Developer Docs
-- [ ] Create API documentation with examples
-- [ ] Add inline code documentation
-- [ ] Create deployment guide
-- [ ] Write testing guide
+### Technical Docs
+- [ ] Document dynamic extraction methodology
+- [ ] Create Voyage integration guide
+- [ ] Write field mapping documentation
+- [ ] Add troubleshooting guide for extraction issues
 
-### User Docs
-- [ ] Create user manual for search features
-- [ ] Add tooltips for complex features
-- [ ] Create video tutorials
-- [ ] Write FAQ section
+### API Documentation
+- [ ] Document dynamic collection endpoints
+- [ ] Add examples for field-based queries
+- [ ] Create migration guide from fixed schema
+- [ ] Document performance benchmarks
 
-## Testing
-
-### Automated Tests
-- [ ] Add unit tests for DSPy modules
-- [ ] Create integration tests for search endpoints
-- [ ] Add E2E tests for critical user flows
-- [ ] Set up continuous integration
-
-### Quality Assurance
-- [ ] Perform load testing
-- [ ] Test with various document types
-- [ ] Validate financial data extraction accuracy
-- [ ] Cross-browser compatibility testing
-
-## Deployment
-
-### Production Readiness
-- [ ] Set up staging environment
-- [ ] Configure production monitoring
-- [ ] Create rollback procedures
-- [ ] Document deployment process
-
-## Future Considerations
+## Future Enhancements
 
 ### Advanced Features
-- [ ] Multi-language support
-- [ ] Voice search integration
-- [ ] Real-time collaboration features
-- [ ] Advanced visualization for portfolio data
+- [ ] Multi-document relationship extraction
+- [ ] Temporal field tracking (changes over time)
+- [ ] Cross-company field comparison
+- [ ] Automated insight generation from fields
 
-### Integrations
-- [ ] Connect with external data sources
-- [ ] Add webhook support for document updates
-- [ ] Integrate with portfolio management tools
-- [ ] Add export to Excel/PDF functionality
+### ML Improvements
+- [ ] Fine-tune extraction prompts per doc type
+- [ ] Implement active learning for field discovery
+- [ ] Add confidence calibration for extractions
+- [ ] Create field importance ranking system

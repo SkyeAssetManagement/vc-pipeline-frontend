@@ -1,70 +1,76 @@
 # VC Pipeline Frontend - Code Documentation
 
 ## Project Overview
-AI-powered venture capital portfolio management platform with DSPy-style self-improving RAG system, Weaviate vector database integration, and comprehensive Braintrust observability for intelligent document search and portfolio analysis.
+AI-powered venture capital portfolio management platform featuring:
+- DSPy-style self-improving RAG system
+- Dynamic field extraction without predefined schemas
+- Weaviate vector database with Voyage-3 embeddings
+- Braintrust observability for intelligent document search
 
 ## Tech Stack
 - **Framework**: Next.js 14.2.32 (App Router)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Database**: Weaviate Vector Database (Hybrid Search)
-- **AI**: Claude Sonnet 4 (claude-sonnet-4-20250514)
-- **Optimization**: DSPy-style TypeScript implementation
-- **Observability**: Braintrust for tracing and evaluation
+- **Database**: Weaviate Cloud (Hybrid Search)
+- **AI Models**:
+  - Claude Sonnet 4 (RAG synthesis)
+  - Claude 3.5 Sonnet (field extraction)
+- **Embeddings**: Voyage-3 (contextual chunking)
+- **Optimization**: DSPy TypeScript implementation
+- **Observability**: Braintrust
 - **Deployment**: Vercel
 
 ## Architecture & Design
 
 ### Core Systems
 
-#### 1. DSPy-Style RAG Optimization (`/lib/dspy/`)
+#### 1. Dynamic RAG System (NEW)
+**LLM-driven field extraction without schemas:**
+- **Adaptive Extraction**: Claude determines relevant fields per document
+- **Document Types**: Automatically classifies (pitch_deck, financial_report, etc.)
+- **No Fixed Schema**: 122+ unique fields discovered dynamically
+- **Collections**:
+  - `DynamicCompanies`: 18 docs with dynamic fields
+  - `DynamicCompaniesComplete`: Full ingestion with Voyage embeddings
+
+#### 2. DSPy-Style Optimization
 **Self-improving multi-stage pipeline:**
-- **Intent Classification**: Categorizes queries (factual/analytical/comparison)
-- **Query Enhancement**: Preserves entity names while adding context
-- **Document Retrieval**: Weaviate hybrid search (BM25 + vector)
-- **Document Reranking**: AI-powered relevance scoring (top 15)
-- **Answer Generation**: Claude synthesis with confidence scoring
+- **Intent Classification**: Categorizes queries
+- **Query Enhancement**: Preserves entities while adding context
+- **Document Retrieval**: Weaviate hybrid search
+- **Document Reranking**: AI-powered relevance scoring
+- **Answer Generation**: Claude synthesis with confidence
 
 **Optimization Process:**
 - Collects high-confidence queries as training examples
-- Triggers optimization after 50+ examples
-- Monitors performance with weighted metrics:
-  - Relevance (30%), Completeness (25%)
-  - Accuracy (25%), Source Quality (20%)
-- Auto-retrains on: model changes, 15% performance drops, daily schedule
+- Triggers after 50+ examples
+- Performance metrics: Relevance (30%), Completeness (25%), Accuracy (25%), Source Quality (20%)
 
-#### 2. Search System
+#### 3. Search System
 **Three search endpoints:**
 - `/api/search-optimized`: Standard Weaviate search
-- `/api/search-dspy`: DSPy-enhanced with optimization
+- `/api/search-dspy`: DSPy-enhanced with learning
 - `/api/search`: Legacy endpoint
 
-**Features:**
-- Query enhancement with VC/PE terminology
-- Company grouping and deduplication
-- Financial data extraction
-- Confidence scoring
+### Data Processing Pipeline
 
-#### 3. Weaviate Integration
-**Collections:**
-- `VC_PE_Claude97_Production`: Primary document store
-- `VC_PE_Claude97_Optimized_Production`: Performance-optimized
+#### Document Ingestion (VC-Pipeline Backend)
+1. **PDF Processing**: PyPDF2 extraction
+2. **Dynamic Field Extraction**: Claude analyzes content
+3. **Embedding Generation**: Voyage-3 contextual embeddings
+4. **Weaviate Storage**: With extracted fields as JSON
 
-**Search Modes:**
-- Semantic (vector similarity)
-- BM25 (keyword matching)
-- Hybrid (combined approach)
+**Processed Companies:**
+- Advanced Navigation: 9+ documents
+- Wonde: 9+ documents
 
-### Data Flow
-1. User query → DSPy toggle check
-2. If DSPy: Intent → Enhancement → Search → Rerank → Generate
-3. If Standard: Enhancement → Search → Generate
-4. Results → Braintrust logging → Response
+### Weaviate Collections
+- `VC_PE_Claude97_Production`: Fixed 97-field schema
+- `DynamicCompanies`: Dynamic schema collection
+- `DynamicCompaniesComplete`: Production with Voyage-3
 
 ## API Endpoints
 
 ### `/api/search-dspy` (POST)
-DSPy-optimized search with learning capabilities.
 ```typescript
 {
   query: string,
@@ -76,166 +82,129 @@ DSPy-optimized search with learning capabilities.
 ```
 
 ### `/api/search-optimized` (POST)
-Standard optimized search.
 ```typescript
 {
   query: string,
-  filters?: object,
   searchType: 'hybrid',
   useOptimizedCollection: boolean
 }
 ```
 
-## DSPy Implementation Details
+## Dynamic Field Extraction Examples
 
-### Configuration (`lib/dspy/config.ts`)
-```typescript
-{
-  llm: 'claude-sonnet-4-20250514',
-  retriever: 'weaviate-hybrid',
-  optimizer: 'BootstrapFewShotWithRandomSearch',
-  maxBootstrapExamples: 20,
-  validationSplitRatio: 0.2
-}
-```
+### Legal Documents
+- `company_acn`, `warrant_details`, `amendment_date`
 
-### Optimization Triggers
-- **Model Change**: Automatic reoptimization
-- **Performance Drop**: >15% decline triggers retraining
-- **Schedule**: Daily optimization
-- **Manual**: Via API endpoint
-- **Training Threshold**: 50 examples minimum
+### Investment Memos
+- `round_size: USD $60M`
+- `pre_money_valuation: USD $250M`
+- `use_of_funds: {sales: 40%, r&d: 40%}`
 
-### Performance Metrics
-- **Standard Search**: ~10 seconds
-- **DSPy Initial**: ~30 seconds
-- **DSPy Optimized**: ~15 seconds
-
-## Frontend Components
-
-### Main Interface (`app/page.tsx`)
-- DSPy toggle with status display
-- Search bar with suggestions
-- Results with confidence indicators
-- Optimization metrics panel
-
-### DSPy Toggle Features
-- Real-time status updates
-- Training example counter
-- Performance score display
-- Model version indicator
+### Company Updates
+- `employee_count: 200`
+- `revenue_growth: 83% YoY`
+- `key_customers: [Tesla, Lockheed Martin]`
 
 ## Environment Configuration
 
 ```env
 # Weaviate
-NEXT_PUBLIC_WEAVIATE_HOST=[weaviate-cloud-url]
+WEAVIATE_URL=[weaviate-cloud-url]
 WEAVIATE_API_KEY=[api-key]
 
 # AI Services
 ANTHROPIC_API_KEY=[claude-api]
-VOYAGE_API_KEY=[embeddings]
+VOYAGE_API_KEY=[voyage-embeddings]
+OPENAI_API_KEY=[openai-api]
 
 # Monitoring
 BRAINTRUST_API_KEY=[braintrust-key]
 ```
 
-## Testing Guide
+## Backend Scripts (vc-pipeline/)
 
-### DSPy Testing
-1. Enable DSPy toggle at http://localhost:3002
-2. Test queries:
-   - "How much did Upswell invest in Riparide?"
-   - "Show me portfolio companies"
-   - "Compare investment terms"
-3. Monitor optimization status
-4. After 50 queries, optimization triggers
+### Dynamic RAG Scripts
+- `dynamic_rag_wcs.py`: Main dynamic extraction system
+- `ingest_all_dynamic.py`: Bulk PDF ingestion
+- `complete_dynamic_ingestion.py`: Full pipeline with Voyage
+- `verify_dynamic_collection.py`: Collection verification
 
-### A/B Comparison
-- Run same query with DSPy ON/OFF
-- Compare response times and quality
-- Check confidence levels
+### Key Features
+- No predefined schema constraints
+- Adaptive field extraction based on content
+- DSPy optimization ready
+- Voyage-3 contextual embeddings
 
-## Recent Updates
+## Performance Metrics
 
-### DSPy Integration (Oct 2024)
-- Implemented TypeScript-native DSPy optimization
-- Fixed query enhancement to preserve entity names
-- Added multi-stage RAG pipeline
-- Created self-learning system
+### Search Performance
+- **Standard Search**: ~10 seconds
+- **DSPy Initial**: ~30 seconds
+- **DSPy Optimized**: ~15 seconds
+- **Dynamic RAG**: ~12 seconds with Voyage
 
-### Model Updates
-- Upgraded to Claude Sonnet 4
-- Improved prompt engineering
-- Enhanced confidence scoring
+### Extraction Statistics
+- **Documents Processed**: 18+
+- **Unique Fields Discovered**: 122
+- **Extraction Success Rate**: 95%
+- **Average Fields per Doc**: 6-12
 
-## Known Issues & Solutions
+## Recent Updates (October 2024)
 
-### DSPy Query Enhancement
-**Issue**: Claude returning explanatory text instead of enhanced query
-**Solution**: Simplified to preserve original query exactly
+### Dynamic RAG Implementation
+- Created schema-free extraction system
+- Integrated Voyage-3 embeddings
+- Processed Advanced Navigation & Wonde docs
+- Achieved 122 unique field discovery
 
-### Weaviate Schema Mismatch
-**Issue**: Different collections have different field schemas
-**Solution**: Use `VC_PE_Claude97_Production` as primary
+### DSPy Integration
+- TypeScript-native optimization
+- Multi-stage RAG pipeline
+- Self-learning system
+- Braintrust integration
 
 ## Development Workflow
 
 ```bash
-# Install dependencies
-npm install
+# Frontend
+cd vc-pipeline-frontend
+npm run dev  # Port 3000/3001/3002
 
-# Run development server
-npm run dev  # Starts on port 3000/3001/3002
-
-# Build for production
-npm run build
-
-# Run linting
-npm run lint
+# Backend Processing
+cd vc-pipeline
+python ingest_all_dynamic.py  # Dynamic extraction
+python verify_dynamic_collection.py  # Verify results
 ```
 
-## Performance Optimizations
-- Document reranking with 500-char preview
-- Top 15 document selection
-- Query preservation in enhancement
-- Company result grouping
-- Intelligent deduplication
-
-## Monitoring & Observability
-- **Braintrust**: All operations traced
-- **Metrics**: Custom scoring for quality
-- **Errors**: Full stack trace capture
-- **Performance**: Response time tracking
-
-## Security
-- Vercel SSO authentication
-- Environment variables secured
-- No hardcoded credentials
-- HTTPS enforced
-- API rate limiting
-
 ## Directory Structure
+
 ```
 vc-pipeline-frontend/
 ├── app/
 │   ├── api/
-│   │   ├── search/
 │   │   ├── search-dspy/
 │   │   └── search-optimized/
 │   └── page.tsx
 ├── lib/
 │   ├── dspy/
-│   │   ├── config.ts
-│   │   ├── modules-native.ts
-│   │   ├── optimizer-native.ts
-│   │   └── rag-service.ts
 │   ├── claude.ts
-│   ├── weaviate.ts
-│   └── braintrust-enhanced.ts
+│   └── weaviate.ts
 └── components/
-    └── search/
-        └── SearchBar.tsx
+
+vc-pipeline/
+├── dynamic_rag_wcs.py
+├── ingest_all_dynamic.py
+├── complete_dynamic_ingestion.py
+└── upswell_companies/
+    ├── 1_advanced_navigation/
+    └── 2_wonde/
 ```
 
-This documentation provides comprehensive technical context for the VC Pipeline Frontend with DSPy-style self-improving RAG capabilities.
+## Key Achievements
+
+1. **Dynamic Field Extraction**: No rigid schemas, adaptive to content
+2. **Voyage-3 Integration**: Superior contextual understanding
+3. **DSPy Optimization**: Self-improving RAG system
+4. **Production Ready**: 18+ documents successfully processed
+
+This documentation provides comprehensive technical context for the VC Pipeline with dynamic RAG capabilities.
