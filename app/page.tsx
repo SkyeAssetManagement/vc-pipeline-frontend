@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link'
-import { ArrowRight, Search, BarChart3, FileText } from 'lucide-react'
+import { ArrowRight, Search, BarChart3, FileText, Sparkles } from 'lucide-react'
 import { SearchBar } from '@/components/search/SearchBar'
 import { useState } from 'react'
 
@@ -12,14 +12,17 @@ export default function HomePage() {
   const [searchConfidence, setSearchConfidence] = useState<'high' | 'medium' | 'low'>('low');
   const [searchSources, setSearchSources] = useState<string[]>([]);
   const [showAllResults, setShowAllResults] = useState(false);
+  const [useDSPy, setUseDSPy] = useState(false);
+  const [optimizationStatus, setOptimizationStatus] = useState<any>(null);
 
   const handleSearch = async (query: string, filters?: any) => {
-    console.log('Search query:', query, 'Filters:', filters);
+    console.log('Search query:', query, 'Filters:', filters, 'Using DSPy:', useDSPy);
     setIsSearching(true);
     setSearchAnswer('');
-    
+
     try {
-      const response = await fetch('/api/search-optimized', {
+      const endpoint = useDSPy ? '/api/search-dspy' : '/api/search-optimized';
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,7 +31,9 @@ export default function HomePage() {
           query,
           filters,
           searchType: 'hybrid',
-          useOptimizedCollection: true
+          useOptimizedCollection: true,
+          userId: 'demo-user',
+          sessionId: 'demo-session'
         }),
       });
 
@@ -36,10 +41,15 @@ export default function HomePage() {
 
       if (data.success) {
         setSearchResults(data.results || []);
-        setSearchAnswer(data.aiAnswer || '');
+        setSearchAnswer(data.aiAnswer || data.answer || '');
         setSearchConfidence(data.confidence || 'low');
         setSearchSources(data.sources || []);
-        setShowAllResults(false); // Reset to showing only 5 when new search is performed
+        setShowAllResults(false);
+
+        // Store optimization status if using DSPy
+        if (useDSPy && data.optimizationStatus) {
+          setOptimizationStatus(data.optimizationStatus);
+        }
       } else {
         console.error('Search failed:', data.error);
         setSearchResults([]);
@@ -73,6 +83,60 @@ export default function HomePage() {
           </h2>
         </div>
 
+        {/* DSPy Optimization Toggle */}
+        <div className="flex justify-center mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-4">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={useDSPy}
+                  onChange={(e) => setUseDSPy(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-gradient-to-r peer-checked:from-purple-500 peer-checked:to-indigo-600"></div>
+                <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                  DSPy Optimization
+                </span>
+              </label>
+
+              {useDSPy && (
+                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                  <Sparkles className="h-4 w-4 text-purple-500" />
+                  <span>Self-improving AI</span>
+                </div>
+              )}
+            </div>
+
+            {/* DSPy Status */}
+            {useDSPy && optimizationStatus && (
+              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-400">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <span className="font-medium">Status:</span> {optimizationStatus.isOptimized ? '✅ Optimized' : '🔄 Learning'}
+                  </div>
+                  <div>
+                    <span className="font-medium">Examples:</span> {optimizationStatus.trainingExamples}
+                  </div>
+                  <div>
+                    <span className="font-medium">Model:</span> {optimizationStatus.currentModel}
+                  </div>
+                  {optimizationStatus.performanceScore && (
+                    <div>
+                      <span className="font-medium">Score:</span> {(optimizationStatus.performanceScore * 100).toFixed(0)}%
+                    </div>
+                  )}
+                </div>
+                {!optimizationStatus.isOptimized && optimizationStatus.trainingExamples < 50 && (
+                  <p className="mt-2 text-amber-600 dark:text-amber-400">
+                    Need {50 - optimizationStatus.trainingExamples} more examples for optimization
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Natural Language Search */}
         <div className="mb-12">
           <SearchBar onSearch={handleSearch} enableFilters={true} />
@@ -90,8 +154,14 @@ export default function HomePage() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                         Claude Analysis
+                        {useDSPy && (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-full">
+                            <Sparkles className="h-3 w-3" />
+                            DSPy Enhanced
+                          </span>
+                        )}
                       </h3>
                       <div className="flex items-center gap-2">
                         <span className={`px-2 py-1 text-xs rounded-full ${

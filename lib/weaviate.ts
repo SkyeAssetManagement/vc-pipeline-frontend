@@ -7,13 +7,13 @@ export class WeaviateService {
     try {
       const result = await client.graphql
         .get()
-        .withClassName('VC_PE_Claude97_Optimized_Production')
+        .withClassName('VC_PE_Claude97_Production')
         .withFields('content document_type company_name _additional { score }')
         .withNearText({ concepts: [query] })
         .withLimit(20)
         .do();
 
-      return result.data.Get.VC_PE_Claude97_Optimized_Production;
+      return result.data.Get.VC_PE_Claude97_Production;
     } catch (error) {
       console.error('Semantic search error:', error);
       throw error;
@@ -25,7 +25,7 @@ export class WeaviateService {
     try {
       const result = await client.graphql
         .get()
-        .withClassName('VC_PE_Claude97_Optimized_Production')
+        .withClassName('VC_PE_Claude97_Production')
         .withFields('content document_type company_name _additional { score }')
         .withBm25({ query })
         .withLimit(20)
@@ -33,7 +33,7 @@ export class WeaviateService {
 
       // Debug logging removed for cleaner output
 
-      return result.data.Get.VC_PE_Claude97_Optimized_Production;
+      return result.data.Get.VC_PE_Claude97_Production;
     } catch (error) {
       console.error('BM25 search error:', error);
       throw error;

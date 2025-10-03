@@ -1,265 +1,241 @@
 # VC Pipeline Frontend - Code Documentation
 
 ## Project Overview
-AI-powered venture capital portfolio management platform with advanced Weaviate vector database integration for intelligent document search, portfolio analysis, and comprehensive Braintrust observability with custom scoring metrics for AI operations monitoring and evaluation.
+AI-powered venture capital portfolio management platform with DSPy-style self-improving RAG system, Weaviate vector database integration, and comprehensive Braintrust observability for intelligent document search and portfolio analysis.
 
 ## Tech Stack
 - **Framework**: Next.js 14.2.32 (App Router)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS with Crimson Text font
-- **Database**: Weaviate Vector Database
-- **AI**: Claude 3.5 Sonnet via Anthropic SDK
-- **AI Observability**: Braintrust for tracing and evaluation
-- **Search**: Hybrid BM25 + Semantic Search
-- **Deployment**: Vercel with SSO protection
-- **Analytics**: Google Looker Studio (embedded)
+- **Styling**: Tailwind CSS
+- **Database**: Weaviate Vector Database (Hybrid Search)
+- **AI**: Claude Sonnet 4 (claude-sonnet-4-20250514)
+- **Optimization**: DSPy-style TypeScript implementation
+- **Observability**: Braintrust for tracing and evaluation
+- **Deployment**: Vercel
 
 ## Architecture & Design
 
-### Core Components
+### Core Systems
 
-#### 1. Search System (`/api/search-optimized`)
-- **Hybrid Search**: Combines keyword (BM25) and semantic vector search
-- **Query Enhancement**: Automatic expansion with relevant financial terms
-- **Result Processing**: Deduplication, confidence scoring, financial extraction
-- **AI Synthesis**: Claude generates contextual answers with source citations
+#### 1. DSPy-Style RAG Optimization (`/lib/dspy/`)
+**Self-improving multi-stage pipeline:**
+- **Intent Classification**: Categorizes queries (factual/analytical/comparison)
+- **Query Enhancement**: Preserves entity names while adding context
+- **Document Retrieval**: Weaviate hybrid search (BM25 + vector)
+- **Document Reranking**: AI-powered relevance scoring (top 15)
+- **Answer Generation**: Claude synthesis with confidence scoring
 
-#### 2. Enhanced Braintrust Integration
-- **Automatic Tracing**: All AI operations logged to VeronaAI project with rich metadata
-- **Custom Scoring Metrics**: Relevance, completeness, accuracy, response time, token efficiency
-- **Advanced Features**: Nested operations, error tracking with stack traces, user/session tracking
-- **Integration Methods**:
-  - Enhanced tracing (`lib/braintrust-enhanced.ts`) with custom scoring
-  - Simple logging (`lib/braintrust-simple.ts`) for basic operations
-  - Direct SDK (`lib/braintrust.ts`) for core functionality
-  - Vercel AI SDK wrapper (`lib/claude-vercel-ai.ts`) for streaming
-- **Test Framework**: Comprehensive test endpoints for validation and debugging
+**Optimization Process:**
+- Collects high-confidence queries as training examples
+- Triggers optimization after 50+ examples
+- Monitors performance with weighted metrics:
+  - Relevance (30%), Completeness (25%)
+  - Accuracy (25%), Source Quality (20%)
+- Auto-retrains on: model changes, 15% performance drops, daily schedule
 
-#### 3. Optimized Weaviate Service (`lib/weaviate-optimized.ts`)
-- **Primary Collection**: `VC_PE_Claude97_Optimized_Production` (enhanced schema)
-- **Legacy Collection**: `VC_PE_Claude97_Production` (fallback compatibility)
-- **Search Modes**: Semantic (BM25), hybrid, filtered search with financial criteria
-- **Enhanced Schema**: Structured financial data extraction with Claude analysis
-- **Field Filtering**: Company, document type, industry, investment amounts, valuations, ownership
-- **Confidence Scoring**: Extraction confidence with quality thresholds
-- **Statistics & Analytics**: Comprehensive document and financial metrics
+#### 2. Search System
+**Three search endpoints:**
+- `/api/search-optimized`: Standard Weaviate search
+- `/api/search-dspy`: DSPy-enhanced with optimization
+- `/api/search`: Legacy endpoint
 
-### Enhanced Data Flow
-1. User submits natural language query via `/api/search-optimized`
-2. Query enhanced with VC/PE financial context and keywords
-3. Weaviate performs intelligent search (hybrid/semantic/filtered) on optimized collection
-4. Results processed with structured financial data extraction
-5. Company grouping and financial aggregation
-6. Claude synthesizes contextual answer with source citations
-7. All operations traced to Braintrust with custom scoring metrics
-8. Response returned with confidence levels, metadata, and performance scores
+**Features:**
+- Query enhancement with VC/PE terminology
+- Company grouping and deduplication
+- Financial data extraction
+- Confidence scoring
+
+#### 3. Weaviate Integration
+**Collections:**
+- `VC_PE_Claude97_Production`: Primary document store
+- `VC_PE_Claude97_Optimized_Production`: Performance-optimized
+
+**Search Modes:**
+- Semantic (vector similarity)
+- BM25 (keyword matching)
+- Hybrid (combined approach)
+
+### Data Flow
+1. User query → DSPy toggle check
+2. If DSPy: Intent → Enhancement → Search → Rerank → Generate
+3. If Standard: Enhancement → Search → Generate
+4. Results → Braintrust logging → Response
 
 ## API Endpoints
 
-### `/api/search-optimized` (POST)
-Primary enhanced search endpoint with advanced Braintrust tracing and scoring.
+### `/api/search-dspy` (POST)
+DSPy-optimized search with learning capabilities.
 ```typescript
 {
-  query: string
-  filters?: {
-    company?: string
-    documentType?: string
-    industry?: string
-    minInvestmentAmount?: number
-    maxInvestmentAmount?: number
-    minValuation?: number
-    maxValuation?: number
-    minOwnership?: number
-    maxOwnership?: number
-    minConfidence?: number
-    hasInvestmentAmount?: boolean
-    hasValuation?: boolean
-  }
-  searchType?: 'semantic' | 'hybrid' | 'filtered'
-  useOptimizedCollection?: boolean
+  query: string,
+  filters?: object,
+  userId: string,
+  sessionId: string
 }
+// Returns: answer, sources, confidence, optimizationStatus
 ```
 
-### `/api/search-vercel-ai` (POST)
-Alternative using Vercel AI SDK with automatic Braintrust wrapping.
-
-### `/api/extract-companies` (GET)
-Returns enriched company data with calculated financials.
-
-### Test Endpoints (Development)
-- `/api/test-braintrust-direct`: Direct Braintrust API testing
-- `/api/debug-braintrust`: Connection diagnostics
-- `/api/test-enhanced-tracing`: Enhanced tracing with custom scoring metrics
-  - Supports simple, complex, and error test scenarios
-  - Demonstrates nested operations and sub-spans
-  - Shows custom scoring calculations in action
-
-## Data Schema
-
-### Enhanced Search Result Structure
+### `/api/search-optimized` (POST)
+Standard optimized search.
 ```typescript
-interface SearchResult {
-  id: string
-  company: string
-  industry: string
-  documentType: string
-  content: string
-  claudeExtraction: string
-
-  // Financial Data (from optimized schema)
-  investmentAmount: number
-  preMoneyValuation: number
-  postMoneyValuation: number
-  fairValue: number
-  ownershipPercentage: number
-
-  // Content Analysis Flags
-  hasInvestmentAmount: boolean
-  hasValuation: boolean
-  hasOwnership: boolean
-  hasFairValue: boolean
-
-  // Quality Metrics
-  extractionConfidence: number
-  score: number
-  chunkId: string
-}
-```
-
-### Enhanced AI Response Format
-```typescript
-interface AIResponse {
-  success: boolean
-  query: string
-  enhancedQuery: string
-  results: SearchResult[]
-  companyGroups: CompanyGroup[]
-  aiAnswer: string
-  confidence: 'high' | 'medium' | 'low'
-  sources: Source[]
-  totalResults: number
-  searchType: string
-  filters: FilterCriteria
+{
+  query: string,
+  filters?: object,
+  searchType: 'hybrid',
   useOptimizedCollection: boolean
-  metadata: {
-    hasStructuredData: boolean
-    averageConfidence: number
-    companiesWithInvestmentAmount: number
-    companiesWithValuation: number
-    companiesWithOwnership: number
-    averageInvestmentAmount: number
-    averageValuation: number
-  }
 }
 ```
+
+## DSPy Implementation Details
+
+### Configuration (`lib/dspy/config.ts`)
+```typescript
+{
+  llm: 'claude-sonnet-4-20250514',
+  retriever: 'weaviate-hybrid',
+  optimizer: 'BootstrapFewShotWithRandomSearch',
+  maxBootstrapExamples: 20,
+  validationSplitRatio: 0.2
+}
+```
+
+### Optimization Triggers
+- **Model Change**: Automatic reoptimization
+- **Performance Drop**: >15% decline triggers retraining
+- **Schedule**: Daily optimization
+- **Manual**: Via API endpoint
+- **Training Threshold**: 50 examples minimum
+
+### Performance Metrics
+- **Standard Search**: ~10 seconds
+- **DSPy Initial**: ~30 seconds
+- **DSPy Optimized**: ~15 seconds
+
+## Frontend Components
+
+### Main Interface (`app/page.tsx`)
+- DSPy toggle with status display
+- Search bar with suggestions
+- Results with confidence indicators
+- Optimization metrics panel
+
+### DSPy Toggle Features
+- Real-time status updates
+- Training example counter
+- Performance score display
+- Model version indicator
 
 ## Environment Configuration
 
-### Required Variables
 ```env
 # Weaviate
-NEXT_PUBLIC_WEAVIATE_SCHEME=https
-NEXT_PUBLIC_WEAVIATE_HOST=[your-host]
-WEAVIATE_API_KEY=[your-key]
+NEXT_PUBLIC_WEAVIATE_HOST=[weaviate-cloud-url]
+WEAVIATE_API_KEY=[api-key]
 
 # AI Services
 ANTHROPIC_API_KEY=[claude-api]
-OPENAI_API_KEY=[embeddings-optional]
+VOYAGE_API_KEY=[embeddings]
 
-# Observability
+# Monitoring
 BRAINTRUST_API_KEY=[braintrust-key]
-
-# Collections
-NEXT_PUBLIC_OPTIMIZED_COLLECTION_NAME=VC_PE_Claude97_Optimized_Production
-NEXT_PUBLIC_LEGACY_COLLECTION_NAME=VC_PE_Claude97_Production
 ```
 
-## UI/UX Design System
+## Testing Guide
 
-### Color Palette
-- Background: `#fbf9f5` (warm off-white)
-- Primary: `#18181b` (near black)
-- Secondary: `#71717a` (gray)
-- Borders: `#e4e4e7` (light gray)
-- Accent: `#3b82f6` (blue hover)
+### DSPy Testing
+1. Enable DSPy toggle at http://localhost:3002
+2. Test queries:
+   - "How much did Upswell invest in Riparide?"
+   - "Show me portfolio companies"
+   - "Compare investment terms"
+3. Monitor optimization status
+4. After 50 queries, optimization triggers
 
-### Component Patterns
-- Minimalist buttons with hover states
-- Expandable results (5 → all)
-- Confidence indicators (high/medium/low)
-- Loading skeletons for async operations
-- Empty states with helpful messages
+### A/B Comparison
+- Run same query with DSPy ON/OFF
+- Compare response times and quality
+- Check confidence levels
 
-## Deployment & Operations
+## Recent Updates
 
-### Vercel Configuration
-- **SSO Protection**: Enabled for API and frontend
-- **Environment Variables**: Configured in dashboard
-- **Auto-deploy**: On push to `clean-portfolio-companies` branch
-- **Build Optimization**: Cached dependencies, parallel builds
+### DSPy Integration (Oct 2024)
+- Implemented TypeScript-native DSPy optimization
+- Fixed query enhancement to preserve entity names
+- Added multi-stage RAG pipeline
+- Created self-learning system
 
-### Enhanced Monitoring & Observability
-- **Braintrust Dashboard**: https://www.braintrust.dev/app
-- **Project**: VeronaAI (ID: `33b48cef-bb63-4500-995b-b4633530045f`)
-- **Enhanced Traces Include**:
-  - Custom scoring metrics (relevance, completeness, accuracy, performance)
-  - Rich metadata (userId, sessionId, feature tags, environment)
-  - Nested operations with clear span names
-  - Error tracking with full stack traces
-  - Financial data context and extraction confidence
-  - Real-time performance monitoring and alerting
+### Model Updates
+- Upgraded to Claude Sonnet 4
+- Improved prompt engineering
+- Enhanced confidence scoring
 
-### Development Commands
+## Known Issues & Solutions
+
+### DSPy Query Enhancement
+**Issue**: Claude returning explanatory text instead of enhanced query
+**Solution**: Simplified to preserve original query exactly
+
+### Weaviate Schema Mismatch
+**Issue**: Different collections have different field schemas
+**Solution**: Use `VC_PE_Claude97_Production` as primary
+
+## Development Workflow
+
 ```bash
-npm run dev          # Local development
-npm run build        # Production build
-npm run lint         # ESLint checks
-npm run typecheck    # TypeScript validation
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev  # Starts on port 3000/3001/3002
+
+# Build for production
+npm run build
+
+# Run linting
+npm run lint
 ```
 
 ## Performance Optimizations
-- Intelligent result limiting with company grouping
-- Advanced deduplication by chunk ID and content similarity
-- Optimized Claude temperature (0.1) for consistent responses
-- Enhanced Weaviate connection pooling
-- Query context enhancement for better semantic matching
-- Structured financial data aggregation
-- Streaming responses with Braintrust tracing
-- Custom scoring calculations for performance monitoring
+- Document reranking with 500-char preview
+- Top 15 document selection
+- Query preservation in enhancement
+- Company result grouping
+- Intelligent deduplication
 
-## Security Considerations
-- Vercel SSO for authentication
+## Monitoring & Observability
+- **Braintrust**: All operations traced
+- **Metrics**: Custom scoring for quality
+- **Errors**: Full stack trace capture
+- **Performance**: Response time tracking
+
+## Security
+- Vercel SSO authentication
 - Environment variables secured
 - No hardcoded credentials
 - HTTPS enforced
-- API rate limiting via Vercel
+- API rate limiting
 
-## Recent Major Enhancements
+## Directory Structure
+```
+vc-pipeline-frontend/
+├── app/
+│   ├── api/
+│   │   ├── search/
+│   │   ├── search-dspy/
+│   │   └── search-optimized/
+│   └── page.tsx
+├── lib/
+│   ├── dspy/
+│   │   ├── config.ts
+│   │   ├── modules-native.ts
+│   │   ├── optimizer-native.ts
+│   │   └── rag-service.ts
+│   ├── claude.ts
+│   ├── weaviate.ts
+│   └── braintrust-enhanced.ts
+└── components/
+    └── search/
+        └── SearchBar.tsx
+```
 
-### Enhanced Braintrust Integration (Latest)
-- **Custom Scoring Metrics**: Automatic calculation of relevance, completeness, accuracy, and performance scores
-- **Rich Metadata Tracking**: User sessions, feature flags, financial context, environment details
-- **Advanced Error Handling**: Full stack trace capture with meaningful error categorization
-- **Nested Operation Support**: Sub-operations and complex workflow tracing
-- **Test Framework**: Comprehensive test endpoints for validation and debugging
-
-### Optimized Weaviate Collection
-- **New Schema**: `VC_PE_Claude97_Optimized_Production` with enhanced financial data structure
-- **Structured Data Extraction**: Investment amounts, valuations, ownership percentages with confidence scoring
-- **Advanced Filtering**: Multi-criteria filtering by financial thresholds and content analysis flags
-- **Industry Classification**: Enhanced company and document categorization
-- **Statistics API**: Comprehensive analytics and document metrics
-
-### Search API Architecture
-- **Query Enhancement**: Automatic expansion with VC/PE financial terminology
-- **Company Grouping**: Intelligent aggregation of results by company with financial summaries
-- **Multi-Modal Search**: Semantic, hybrid, and filtered search with automatic fallback
-- **Performance Monitoring**: Real-time tracking of search quality and response times
-
-### Infrastructure & DevOps
-- Resolved all TypeScript compilation errors
-- Enhanced deployment pipeline with proper environment variable management
-- Vercel AI SDK integration with Braintrust wrapper
-- Production-ready error handling and logging
-
-This documentation provides comprehensive technical context for maintaining and extending the VC Pipeline Frontend application with its advanced AI observability, enhanced search capabilities, and production-ready monitoring infrastructure. The system now features sophisticated financial data analysis, custom scoring metrics, and comprehensive tracing for optimal performance and reliability.
+This documentation provides comprehensive technical context for the VC Pipeline Frontend with DSPy-style self-improving RAG capabilities.

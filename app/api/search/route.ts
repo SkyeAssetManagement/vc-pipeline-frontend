@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { WeaviateService } from '@/lib/weaviate';
+import { vertexAIService } from '@/lib/vertex-ai-rag';
 import { ClaudeService } from '@/lib/claude';
 import { tracedOperation, calculateSearchRelevance, calculateCompleteness } from '@/lib/braintrust-enhanced';
 
@@ -48,15 +49,12 @@ export async function POST(request: NextRequest) {
     const enhancedQuery = enhanceQueryWithInvestors(query);
     console.log('🔍 Enhanced query:', enhancedQuery);
 
-    // Perform search based on type with tracing
+    // Perform search using Vertex AI RAG instead of Weaviate
     let searchResults = await tracedOperation(
-      `weaviate-${searchType}-search`,
+      `vertex-ai-${searchType}-search`,
       async () => {
-        if (searchType === 'semantic') {
-          return await WeaviateService.semanticSearch(enhancedQuery, filters);
-        } else {
-          return await WeaviateService.hybridSearch(enhancedQuery, filters);
-        }
+        // Use Vertex AI search for all query types
+        return await vertexAIService.performSearch(enhancedQuery, filters);
       },
       {
         input: enhancedQuery,

@@ -1,109 +1,114 @@
-# VC Pipeline Frontend - Project TODOs
+# Project TODOs
 
-## Recently Completed ✅
-- ✅ Enhanced Braintrust integration with custom scoring metrics
-- ✅ Implemented optimized Weaviate collection (VC_PE_Claude97_Optimized_Production)
-- ✅ Added advanced search API with financial data filtering
-- ✅ Created comprehensive test framework for Braintrust tracing
-- ✅ Fixed all TypeScript compilation errors and build issues
-- ✅ Enhanced error handling with stack trace capture
-- ✅ Implemented nested operation tracing and performance monitoring
-- ✅ Added rich metadata tracking (userId, sessionId, features)
-- ✅ Created structured financial data extraction and analysis
-- ✅ Deployed enhanced system to Vercel production
-- ✅ Updated documentation with current architecture
+## DSPy Optimization
 
-## High Priority 🔴
+### Immediate
+- [ ] Collect 50+ training examples to trigger first optimization
+- [ ] Monitor performance metrics after optimization
+- [ ] Test optimization with different query types
 
-### Production Optimization
-- [ ] Verify BRAINTRUST_API_KEY is properly configured in Vercel
-- [ ] Monitor enhanced custom scoring metrics in production
-- [ ] Set up automated alerts for performance degradation (response time > 3s, confidence < 0.7)
-- [ ] Create evaluation datasets from high-performing search queries
-- [ ] Implement user feedback collection for scoring validation
+### Enhancements
+- [ ] Implement persistence for training examples (currently in-memory)
+- [ ] Add database storage for optimized pipelines
+- [ ] Create admin UI for manual optimization control
+- [ ] Add export/import for training datasets
 
-### Data Quality & Monitoring
-- [ ] Validate financial data extraction accuracy in optimized collection
-- [ ] Monitor extraction confidence scores and identify improvement areas
-- [ ] Review search relevance scores and optimize query enhancement
-- [ ] Track API error rates and implement additional fallback mechanisms
+## Performance
 
-## Medium Priority 🟡
+### Query Optimization
+- [ ] Implement query caching for repeated searches
+- [ ] Add Redis for result caching
+- [ ] Optimize document reranking algorithm
+- [ ] Reduce DSPy initial response time (currently ~30s)
+
+### Infrastructure
+- [ ] Set up proper error monitoring (Sentry)
+- [ ] Add performance monitoring dashboard
+- [ ] Implement rate limiting per user
+- [ ] Set up CDN for static assets
+
+## Features
+
+### Search Enhancements
+- [ ] Add fuzzy matching for company names
+- [ ] Implement query autocomplete from historical searches
+- [ ] Add search history per user
+- [ ] Create saved search functionality
+
+### UI/UX
+- [ ] Add dark mode support
+- [ ] Create mobile-responsive design
+- [ ] Add export functionality for search results
+- [ ] Implement result highlighting for matched terms
+
+## Data & Analytics
+
+### Weaviate
+- [ ] Migrate remaining documents to optimized collection
+- [ ] Set up automated document ingestion pipeline
+- [ ] Add document versioning support
+- [ ] Implement incremental indexing
+
+### Monitoring
+- [ ] Set up alerting for failed searches
+- [ ] Create dashboard for search analytics
+- [ ] Add user behavior tracking
+- [ ] Implement A/B testing framework
+
+## Security & Compliance
+
+### Authentication
+- [ ] Add role-based access control
+- [ ] Implement API key management
+- [ ] Add audit logging for sensitive operations
+- [ ] Set up data retention policies
+
+## Documentation
+
+### Developer Docs
+- [ ] Create API documentation with examples
+- [ ] Add inline code documentation
+- [ ] Create deployment guide
+- [ ] Write testing guide
+
+### User Docs
+- [ ] Create user manual for search features
+- [ ] Add tooltips for complex features
+- [ ] Create video tutorials
+- [ ] Write FAQ section
+
+## Testing
+
+### Automated Tests
+- [ ] Add unit tests for DSPy modules
+- [ ] Create integration tests for search endpoints
+- [ ] Add E2E tests for critical user flows
+- [ ] Set up continuous integration
+
+### Quality Assurance
+- [ ] Perform load testing
+- [ ] Test with various document types
+- [ ] Validate financial data extraction accuracy
+- [ ] Cross-browser compatibility testing
+
+## Deployment
+
+### Production Readiness
+- [ ] Set up staging environment
+- [ ] Configure production monitoring
+- [ ] Create rollback procedures
+- [ ] Document deployment process
+
+## Future Considerations
 
 ### Advanced Features
-- [ ] Implement semantic caching for repeated financial queries
-- [ ] Add real-time financial data validation and cross-referencing
-- [ ] Create advanced portfolio analytics with risk scoring
-- [ ] Implement automated anomaly detection in financial extractions
-- [ ] Add support for multi-language document processing
+- [ ] Multi-language support
+- [ ] Voice search integration
+- [ ] Real-time collaboration features
+- [ ] Advanced visualization for portfolio data
 
-### Analytics & Insights
-- [ ] Connect enhanced Braintrust metrics to Looker Studio dashboard
-- [ ] Create comprehensive AI performance monitoring dashboard
-- [ ] Implement detailed cost tracking and optimization recommendations
-- [ ] Add user behavior analytics with search pattern analysis
-- [ ] Create investment trend analysis and predictive insights
-
-### Search Experience
-- [ ] Add intelligent query suggestions based on document content
-- [ ] Implement faceted search with dynamic filter options
-- [ ] Create saved search functionality with alerting
-- [ ] Add collaborative features for team-based analysis
-
-## Low Priority 🔵
-
-### Testing & Quality Assurance
-- [ ] Add comprehensive unit tests for enhanced Braintrust integration
-- [ ] Create automated evaluation datasets for financial data extraction
-- [ ] Implement A/B testing framework for search algorithms
-- [ ] Add comprehensive load testing for optimized search endpoints
-- [ ] Create regression testing for financial data accuracy
-
-### Documentation & Training
-- [ ] Create video tutorials for Braintrust dashboard usage
-- [ ] Document advanced troubleshooting guides for custom scoring
-- [ ] Add comprehensive API performance benchmarks
-- [ ] Create user training materials for advanced search features
-- [ ] Document financial data extraction validation processes
-
-### Extended Features
-- [ ] Add batch document processing with progress tracking
-- [ ] Implement advanced model comparison and evaluation framework
-- [ ] Create comprehensive data export functionality
-- [ ] Add integration with external financial data sources
-- [ ] Implement advanced reporting and analytics suite
-
-## Technical Debt
-
-### Code Quality & Architecture
-- [ ] Refactor and consolidate multiple Braintrust integration approaches
-- [ ] Create unified AI service abstraction layer
-- [ ] Remove or secure development test endpoints for production
-- [ ] Optimize bundle size and implement code splitting
-- [ ] Standardize error handling patterns across all APIs
-- [ ] Implement comprehensive input validation and sanitization
-
-### Infrastructure & DevOps
-- [ ] Set up dedicated staging environment with production data subset
-- [ ] Configure comprehensive CI/CD pipeline with automated testing
-- [ ] Add comprehensive health check and monitoring endpoints
-- [ ] Implement automated secret rotation and security scanning
-- [ ] Set up blue-green deployment strategy
-- [ ] Create disaster recovery and backup procedures
-
-## Current Focus
-1. Monitor and validate enhanced custom scoring metrics in production
-2. Optimize financial data extraction accuracy and confidence scoring
-3. Set up automated alerting for performance and quality degradation
-4. Create evaluation datasets from successful search operations
-5. Implement user feedback collection for continuous improvement
-
-## Notes
-- **Braintrust Project**: VeronaAI (ID: 33b48cef-bb63-4500-995b-b4633530045f)
-- **Production URL**: https://vc-pipeline-frontend-ijjh9akq7-ryanxhart-6889s-projects.vercel.app/
-- **Primary Collection**: VC_PE_Claude97_Optimized_Production (enhanced schema)
-- **Legacy Collection**: VC_PE_Claude97_Production (fallback compatibility)
-- **Enhanced Features**: Custom scoring, financial data extraction, nested tracing
-- **Vercel Configuration**: SSO protection enabled, auto-deploy from `clean-portfolio-companies`
-- **Custom Metrics**: Relevance, completeness, accuracy, performance, extraction confidence
-- **Test Endpoints**: `/api/test-enhanced-tracing` for validation and debugging
+### Integrations
+- [ ] Connect with external data sources
+- [ ] Add webhook support for document updates
+- [ ] Integrate with portfolio management tools
+- [ ] Add export to Excel/PDF functionality
