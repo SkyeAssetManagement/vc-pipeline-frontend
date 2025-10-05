@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { WeaviateService } from '@/lib/weaviate';
-import { vertexAIService } from '@/lib/vertex-ai-rag';
 import { ClaudeService } from '@/lib/claude';
 import { tracedOperation, calculateSearchRelevance, calculateCompleteness } from '@/lib/braintrust-enhanced';
 
@@ -49,12 +48,17 @@ export async function POST(request: NextRequest) {
     const enhancedQuery = enhanceQueryWithInvestors(query);
     console.log('🔍 Enhanced query:', enhancedQuery);
 
-    // Perform search using Vertex AI RAG instead of Weaviate
+    // Perform search using Weaviate
     let searchResults = await tracedOperation(
-      `vertex-ai-${searchType}-search`,
+      `weaviate-${searchType}-search`,
       async () => {
-        // Use Vertex AI search for all query types
-        return await vertexAIService.performSearch(enhancedQuery, filters);
+        // Use Weaviate search based on search type
+        if (searchType === 'semantic') {
+          return await WeaviateService.semanticSearch(enhancedQuery, filters);
+        } else {
+          // hybrid or default
+          return await WeaviateService.hybridSearch(enhancedQuery, 0.7);
+        }
       },
       {
         input: enhancedQuery,
@@ -83,23 +87,15 @@ export async function POST(request: NextRequest) {
       searchResults = [];
     }
 
-    // Process and format results (handling both collection schemas)
+    // Process and format results from Weaviate
     const processedResults = searchResults.map((result: any, index: number) => ({
-      id: result.chunk_id || `result-${index}`,
+      id: `result-${index}`,
       type: 'document',
       title: result.document_type || 'Document',
       company: result.company_name || 'Unknown Company',
       snippet: result.content ? result.content.substring(0, 200) + '...' : 'No content available',
       content: result.content,
       documentType: result.document_type,
-      industry: result.industry,
-      investmentAmount: result.investment_amount,
-      preMoneyValuation: result.pre_money_valuation,
-      postMoneyValuation: result.post_money_valuation,
-      fairValue: result.fair_value,
-      ownershipPercentage: result.ownership_percentage,
-      claudeExtraction: result.claude_extraction,
-      extractionConfidence: result.extraction_confidence,
       score: result._additional?.score || 0
     }));
 
