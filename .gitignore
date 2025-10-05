@@ -43,3 +43,7 @@ add-vercel-env.bat
 *.tsbuildinfo
 next-env.d.ts
 .vercel
+
+# Files with exposed secrets (prevent accidental commit)
+.claude/verona-ai-implementation.md
+FRONTEND_CONNECTION_GUIDE.md
