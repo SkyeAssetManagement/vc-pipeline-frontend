@@ -9,33 +9,35 @@ export async function GET() {
     const schema = await client.schema.getter().do();
     
     const result: any = {
-      totalClasses: schema.classes.length,
+      totalClasses: schema.classes?.length || 0,
       classes: {}
     };
-    
-    for (const cls of schema.classes) {
-      result.classes[cls.class] = {
-        description: cls.description || 'No description',
-        vectorizer: cls.vectorizer || 'Not specified',
-        propertyCount: cls.properties.length,
-        properties: cls.properties.map((prop: any) => ({
-          name: prop.name,
-          type: prop.dataType,
-          tokenization: prop.tokenization
-        }))
-      };
-      
-      // Try to get a count of objects in each class
-      try {
-        const count = await client.graphql
-          .aggregate()
-          .withClassName(cls.class)
-          .withFields('meta { count }')
-          .do();
-          
-        result.classes[cls.class].objectCount = count.data.Aggregate[cls.class]?.[0]?.meta?.count || 0;
-      } catch (countError: any) {
-        result.classes[cls.class].objectCount = 'Error counting objects';
+
+    for (const cls of schema.classes || []) {
+      if (cls.class) {
+        result.classes[cls.class] = {
+          description: cls.description || 'No description',
+          vectorizer: cls.vectorizer || 'Not specified',
+          propertyCount: cls.properties?.length || 0,
+          properties: (cls.properties || []).map((prop: any) => ({
+            name: prop.name,
+            type: prop.dataType,
+            tokenization: prop.tokenization
+          }))
+        };
+
+        // Try to get a count of objects in each class
+        try {
+          const count = await client.graphql
+            .aggregate()
+            .withClassName(cls.class)
+            .withFields('meta { count }')
+            .do();
+
+          result.classes[cls.class].objectCount = count.data.Aggregate[cls.class]?.[0]?.meta?.count || 0;
+        } catch (countError: any) {
+          result.classes[cls.class].objectCount = 'Error counting objects';
+        }
       }
     }
     

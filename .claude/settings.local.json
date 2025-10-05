@@ -5,7 +5,13 @@
       "Bash(npm install:*)",
       "Bash(npm run dev:*)",
       "Bash(node:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Read(//c/RyanCode/VeronaAI/**)",
+      "Bash(findstr:*)",
+      "Bash(timeout:*)",
+      "Bash(curl:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

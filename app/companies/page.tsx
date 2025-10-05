@@ -3,10 +3,21 @@
 import Link from 'next/link';
 import { ArrowLeft, TrendingUp, TrendingDown, Minus, ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { Company } from '@/types/company';
-import { companiesData, formatCurrency, calculatePerformance } from '@/lib/companies-data';
+import { formatCurrency, calculatePerformance } from '@/lib/portfolio-utils';
 
-interface EnrichedCompany extends Company {
+interface EnrichedCompany {
+  company_id: string;
+  name: string;
+  legal_name: string;
+  jurisdiction: string;
+  industry: string;
+  sector: string;
+  status: string;
+  description: string;
+  website: string;
+  headquarters: string;
+  created_at: string;
+  updated_at: string;
   totalInvestment: number;
   fairValue: number;
   initialInvestmentYear?: number;
@@ -26,18 +37,14 @@ export default function CompaniesListPage() {
     try {
       setLoading(true);
 
-      // Fetch extracted companies from documents and structured data
-      const [extractedResponse, structuredResponse] = await Promise.all([
-        fetch('/api/extract-companies'),
-        fetch('/api/test') // This includes Loopit structured data
-      ]);
+      // Fetch extracted companies from documents
+      const extractedResponse = await fetch('/api/extract-companies');
 
       if (!extractedResponse.ok) {
         throw new Error('Failed to fetch extracted companies');
       }
 
       const extractedData = await extractedResponse.json();
-      const structuredData = await structuredResponse.json();
 
       if (!extractedData.success) {
         throw new Error(extractedData.error || 'Failed to load extracted companies');
@@ -65,54 +72,15 @@ export default function CompaniesListPage() {
         };
       });
 
-      // Add structured Loopit data if available and not already included
-      if (structuredData.success && structuredData.sampleData?.companies?.length > 0) {
-        const structuredCompany = structuredData.sampleData.companies[0];
-        const structuredInvestments = structuredData.sampleData.investments || [];
-
-        // Check if Loopit is already in extracted data
-        const existingLoopit = enrichedCompanies.find(c =>
-          c.name.toLowerCase().includes('loopit') || c.company_id.includes('loopit')
-        );
-
-        if (existingLoopit) {
-          // Update existing Loopit with structured data
-          const totalStructuredInvestment = structuredInvestments.reduce(
-            (sum: number, inv: any) => sum + (inv.investment_amount || 0), 0
-          );
-          existingLoopit.totalInvestment = Math.max(existingLoopit.totalInvestment, totalStructuredInvestment);
-          existingLoopit.fairValue = existingLoopit.totalInvestment * 2.5; // Estimate fair value
-          existingLoopit.description = structuredCompany.description || existingLoopit.description;
-          existingLoopit.website = structuredCompany.website || existingLoopit.website;
-          existingLoopit.initialInvestmentYear = 2022; // From structured data
-        }
-      }
 
       setCompanies(enrichedCompanies);
     } catch (err) {
       console.error('Error fetching companies:', err);
       setError(err instanceof Error ? err.message : 'Failed to load companies');
 
-      // Fallback to mock data
-      const mockEnrichedData: EnrichedCompany[] = companiesData.map(mock => ({
-        company_id: mock.id,
-        name: mock.company_name,
-        legal_name: mock.company_name,
-        jurisdiction: 'Australia',
-        industry: mock.industry,
-        sector: mock.industry,
-        status: mock.status,
-        description: mock.description,
-        website: mock.website || '',
-        headquarters: 'Unknown',
-        created_at: '',
-        updated_at: '',
-        totalInvestment: mock.investment_amount,
-        fairValue: mock.fair_value,
-        initialInvestmentYear: mock.initial_investment_year,
-        stage: mock.stage
-      }));
-      setCompanies(mockEnrichedData);
+      // NO PLACEHOLDER DATA FALLBACK
+      // If real data cannot be fetched, show error state with empty companies list
+      setCompanies([]);
     } finally {
       setLoading(false);
     }
@@ -153,7 +121,7 @@ export default function CompaniesListPage() {
             Portfolio Companies
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400">
-            Explore detailed information about each company in our venture capital portfolio
+            Explore detailed information about each company in our portfolio
           </p>
         </div>
 
@@ -220,7 +188,7 @@ export default function CompaniesListPage() {
         {!loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {companies
-              .sort((a, b) => b.fairValue - a.fairValue)
+              .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically by name
               .map(company => {
               const performance = calculatePerformance(company.totalInvestment, company.fairValue);
 
@@ -252,40 +220,42 @@ export default function CompaniesListPage() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600 dark:text-gray-400">Total Investment</span>
                       <span className="font-medium text-gray-900 dark:text-white">
-                        {formatCurrency(company.totalInvestment)}
+                        {company.totalInvestment > 0 ? formatCurrency(company.totalInvestment) : 'N/A'}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600 dark:text-gray-400">Fair Value</span>
                       <span className="font-medium text-gray-900 dark:text-white">
-                        {formatCurrency(company.fairValue)}
+                        {company.fairValue > 0 ? formatCurrency(company.fairValue) : 'N/A'}
                       </span>
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">ROI</span>
-                      <div className="flex items-center gap-2">
-                        {performance.status === 'positive' ? (
-                          <TrendingUp className="w-4 h-4 text-green-500" />
-                        ) : performance.status === 'negative' ? (
-                          <TrendingDown className="w-4 h-4 text-red-500" />
-                        ) : (
-                          <Minus className="w-4 h-4 text-gray-500" />
-                        )}
-                        <span className={`font-bold ${
-                          performance.status === 'positive'
-                            ? 'text-green-600 dark:text-green-400'
-                            : performance.status === 'negative'
-                            ? 'text-red-600 dark:text-red-400'
-                            : 'text-gray-900 dark:text-white'
-                        }`}>
-                          {performance.percentage.toFixed(1)}%
-                        </span>
+                  {company.totalInvestment > 0 && company.fairValue > 0 && (
+                    <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">ROI</span>
+                        <div className="flex items-center gap-2">
+                          {performance.status === 'positive' ? (
+                            <TrendingUp className="w-4 h-4 text-green-500" />
+                          ) : performance.status === 'negative' ? (
+                            <TrendingDown className="w-4 h-4 text-red-500" />
+                          ) : (
+                            <Minus className="w-4 h-4 text-gray-500" />
+                          )}
+                          <span className={`font-bold ${
+                            performance.status === 'positive'
+                              ? 'text-green-600 dark:text-green-400'
+                              : performance.status === 'negative'
+                              ? 'text-red-600 dark:text-red-400'
+                              : 'text-gray-900 dark:text-white'
+                          }`}>
+                            {performance.percentage.toFixed(1)}%
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="flex gap-2 mt-4">
                     <span className="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-full">

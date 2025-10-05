@@ -1,195 +1,204 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { WeaviateService } from '@/lib/weaviate';
+import { vertexAIService } from '@/lib/vertex-ai-rag';
+import { ClaudeService } from '@/lib/claude';
+import { tracedOperation, calculateSearchRelevance, calculateCompleteness } from '@/lib/braintrust-enhanced';
 
-async function generateAnswer(query: string, results: any[], structuredData: any) {
-  try {
-    // Prepare context from search results
-    const context = results.slice(0, 5).map((result, i) => 
-      `Document ${i + 1} (${result.company} - ${result.type}):\n${result.content}\n`
-    ).join('\n');
+// Function to enhance queries with office investment entities
+function enhanceQueryWithInvestors(query: string): string {
+  const officeInvestors = ['Upswell Ventures', 'Arrochar Pty Ltd', 'Skye Alba Pty Ltd'];
 
-    // Add structured data context if available
-    let structuredContext = '';
-    if (structuredData.investments?.length > 0) {
-      const totalRaised = structuredData.totalRaised || 0;
-      const avgInvestment = structuredData.averageInvestment || 0;
-      structuredContext = `\n\nPortfolio Summary:\n- Total Investment Amount: $${totalRaised.toLocaleString()}\n- Average Investment: $${avgInvestment.toLocaleString()}\n- Number of Investment Rounds: ${structuredData.investments.length}`;
-    }
+  // Keywords that suggest the user is asking about investments, deals, or entities
+  const investmentKeywords = [
+    'investment', 'investor', 'funding', 'round', 'valuation', 'deal', 'term sheet',
+    'subscription', 'agreement', 'participant', 'lead investor', 'venture', 'capital',
+    'equity', 'shares', 'stakeholder', 'portfolio', 'raise', 'series', 'seed'
+  ];
 
-    const prompt = `You are a VC portfolio analyst. Based on the following documents and data, provide a comprehensive answer to the user's question.
+  // Check if query contains investment-related terms
+  const isInvestmentQuery = investmentKeywords.some(keyword =>
+    query.toLowerCase().includes(keyword.toLowerCase())
+  );
 
-User Question: "${query}"
-
-Relevant Documents:
-${context}
-${structuredContext}
-
-Instructions:
-- Synthesize the information into a clear, conversational response
-- Focus on specific numbers, companies, and investment details mentioned
-- If discussing investments, include amounts, dates, and key terms
-- Highlight the most relevant and important information
-- Keep the response concise but informative (2-4 paragraphs max)
-- Use a professional but accessible tone
-- If the information is incomplete, acknowledge what's known vs unknown
-
-Provide a direct answer to the user's question:`;
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: 500,
-        temperature: 0.3,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`OpenAI API failed: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0]?.message?.content || null;
-
-  } catch (error) {
-    console.error('Answer generation failed:', error);
-    return null;
+  // If it's an investment-related query, enhance with our office entities
+  if (isInvestmentQuery) {
+    const investorTerms = officeInvestors.join(' OR ');
+    return `${query} OR ${investorTerms}`;
   }
+
+  return query;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { query, searchType = 'hybrid', filters } = await request.json();
+    const body = await request.json();
+    const { query, filters, searchType = 'hybrid', userId, sessionId } = body;
 
-    if (!query) {
-      return NextResponse.json(
-        { error: 'Query is required' },
-        { status: 400 }
-      );
+    if (!query || query.trim().length === 0) {
+      return NextResponse.json({
+        success: false,
+        error: 'Search query is required'
+      }, { status: 400 });
     }
 
-    console.log(`🔍 Searching for: "${query}" (type: ${searchType})`);
+    console.log('🔍 Processing search query:', query);
+    console.log('📊 Filters:', filters);
+    console.log('🔧 Search type:', searchType);
 
-    // Check if it's an investment query - search both documents and structured data
-    const isInvestmentQuery = query.toLowerCase().includes('investment') || 
-                             query.toLowerCase().includes('amount') ||
-                             query.toLowerCase().includes('funding') ||
-                             query.toLowerCase().includes('round');
+    // Enhance query to include office investment entities for relevant searches
+    const enhancedQuery = enhanceQueryWithInvestors(query);
+    console.log('🔍 Enhanced query:', enhancedQuery);
 
-    let results;
-    let structuredResults = {};
-
-    // Always search document chunks for content
-    if (searchType === 'semantic') {
-      results = await WeaviateService.semanticSearch(query, filters);
-    } else {
-      results = await WeaviateService.hybridSearch(query, 0.7);
-    }
-
-    // For investment queries, also get structured investment data
-    if (isInvestmentQuery) {
-      try {
-        const [investments, companies, investors] = await Promise.all([
-          WeaviateService.getInvestments(),
-          WeaviateService.getCompanies(), 
-          WeaviateService.getInvestors()
-        ]);
-
-        structuredResults = {
-          investments,
-          companies,
-          investors,
-          totalRaised: investments.reduce((sum, inv) => sum + inv.investment_amount, 0),
-          averageInvestment: investments.length ? investments.reduce((sum, inv) => sum + inv.investment_amount, 0) / investments.length : 0
+    // Perform search using Vertex AI RAG instead of Weaviate
+    let searchResults = await tracedOperation(
+      `vertex-ai-${searchType}-search`,
+      async () => {
+        // Use Vertex AI search for all query types
+        return await vertexAIService.performSearch(enhancedQuery, filters);
+      },
+      {
+        input: enhancedQuery,
+        userId,
+        sessionId,
+        searchType,
+        filters,
+        feature: 'document-search',
+        companyName: filters?.company,
+        documentType: filters?.documentType,
+      },
+      (results) => {
+        const resultCount = Array.isArray(results) ? results.length : 0;
+        return {
+          // Score the search results - ensure all values are valid numbers
+          resultCount: Math.min(resultCount / 20, 1), // Max score at 20 results
+          hasResults: resultCount > 0 ? 1 : 0,
+          searchQuality: resultCount > 10 ? 1 : Math.max(0, resultCount / 10),
         };
-      } catch (err) {
-        console.error('Failed to get structured data:', err);
       }
+    );
+
+    // Ensure searchResults is an array
+    if (!Array.isArray(searchResults)) {
+      console.warn('Search results is not an array:', searchResults);
+      searchResults = [];
     }
 
-    // Format results for the frontend
-    const formattedResults = (results || []).map((chunk: any) => ({
-      id: chunk.chunk_id || Math.random().toString(36),
-      title: `${chunk.document_type || 'Document'} - ${chunk.section_type || 'Section'}`,
-      type: chunk.document_type || 'Document',
-      company: chunk.company_name || 'Unknown Company',
-      content: chunk.content || 'No content available',
-      confidence: chunk._additional?.score || chunk.retrieval_score || 0,
-      metadata: {
-        section_type: chunk.section_type,
-        document_type: chunk.document_type,
-        chunk_index: chunk.chunk_index,
-        token_count: chunk.token_count,
-        retrieval_score: chunk.retrieval_score,
-        file_path: chunk.file_path,
-        round_info: chunk.round_info,
-        created_at: chunk.created_at,
-        document_id: chunk.document_id
-      }
+    // Process and format results (handling both collection schemas)
+    const processedResults = searchResults.map((result: any, index: number) => ({
+      id: result.chunk_id || `result-${index}`,
+      type: 'document',
+      title: result.document_type || 'Document',
+      company: result.company_name || 'Unknown Company',
+      snippet: result.content ? result.content.substring(0, 200) + '...' : 'No content available',
+      content: result.content,
+      documentType: result.document_type,
+      industry: result.industry,
+      investmentAmount: result.investment_amount,
+      preMoneyValuation: result.pre_money_valuation,
+      postMoneyValuation: result.post_money_valuation,
+      fairValue: result.fair_value,
+      ownershipPercentage: result.ownership_percentage,
+      claudeExtraction: result.claude_extraction,
+      extractionConfidence: result.extraction_confidence,
+      score: result._additional?.score || 0
     }));
 
-    // Generate AI-powered answer synthesis
-    let synthesizedAnswer = null;
-    if (formattedResults.length > 0) {
-      synthesizedAnswer = await generateAnswer(query, formattedResults, structuredResults);
-    }
+    // Group results by company for better organization
+    const groupedResults = processedResults.reduce((acc: any, result: any) => {
+      const company = result.company;
+      if (!acc[company]) {
+        acc[company] = {
+          company,
+          documents: [],
+          totalScore: 0
+        };
+      }
+      acc[company].documents.push(result);
+      acc[company].totalScore += result.score;
+      return acc;
+    }, {});
+
+    // Convert to array and sort by relevance
+    const companyGroups = Object.values(groupedResults)
+      .map((group: any) => ({
+        ...group,
+        averageScore: group.totalScore / group.documents.length
+      }))
+      .sort((a: any, b: any) => b.averageScore - a.averageScore);
+
+    // Generate AI-synthesized answer using Claude with tracing
+    const claudeResponse = await tracedOperation(
+      'claude-generate-answer',
+      async () => await ClaudeService.generateAnswer(query, processedResults, companyGroups),
+      {
+        input: query,
+        userId,
+        sessionId,
+        feature: 'ai-synthesis',
+        resultsCount: processedResults.length,
+        companyCount: companyGroups.length,
+      },
+      (result) => ({
+        relevance: calculateSearchRelevance(query, processedResults, result.confidence) || 0,
+        completeness: calculateCompleteness(result.answer || '', result.sources || []) || 0,
+        confidenceScore: result.confidence === 'high' ? 1 : result.confidence === 'medium' ? 0.7 : 0.4,
+        sourceQuality: Math.min((result.sources?.length || 0) / 5, 1),
+      })
+    );
+    const aiAnswer = claudeResponse.answer;
+
+    console.log('Search completed:', {
+      resultsCount: processedResults.length,
+      companyGroups: companyGroups.length,
+      aiAnswerLength: aiAnswer.length,
+      confidence: claudeResponse.confidence,
+      sources: claudeResponse.sources.length
+    });
 
     return NextResponse.json({
       success: true,
-      answer: synthesizedAnswer,
-      results: formattedResults,
-      structuredData: structuredResults,
       query,
+      enhancedQuery,
+      results: processedResults,
+      companyGroups,
+      aiAnswer,
+      confidence: claudeResponse.confidence,
+      sources: claudeResponse.sources,
+      totalResults: processedResults.length,
       searchType,
-      resultCount: formattedResults.length,
-      timestamp: new Date().toISOString()
+      filters: filters || {}
     });
 
   } catch (error) {
     console.error('Search API error:', error);
-    return NextResponse.json(
-      { 
-        error: 'Search failed', 
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Search failed',
+      details: process.env.NODE_ENV === 'development' ? error : undefined
+    }, { status: 500 });
   }
 }
 
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const query = searchParams.get('q');
-  
-  if (!query) {
-    return NextResponse.json(
-      { error: 'Query parameter q is required' },
-      { status: 400 }
-    );
-  }
+// Claude integration handles all AI responses now
 
-  try {
-    const results = await WeaviateService.hybridSearch(query);
-    return NextResponse.json({
-      success: true,
-      results: results || [],
-      query
-    });
-  } catch (error) {
-    console.error('Search API error:', error);
-    return NextResponse.json(
-      { error: 'Search failed' },
-      { status: 500 }
-    );
-  }
+// GET endpoint for testing
+export async function GET() {
+  return NextResponse.json({
+    message: 'Search API is running',
+    endpoints: {
+      POST: '/api/search - Perform search with query and filters'
+    },
+    example: {
+      method: 'POST',
+      body: {
+        query: 'Show me Series A investment terms',
+        filters: {
+          company: 'Advanced Navigation',
+          documentType: 'term_sheet'
+        },
+        searchType: 'hybrid'
+      }
+    }
+  });
 }

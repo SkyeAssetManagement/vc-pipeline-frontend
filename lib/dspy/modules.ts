@@ -1,0 +1,122 @@
+import dspy from 'dspy';
+import {
+  QueryEnhancement,
+  DocumentReranking,
+  AnswerGeneration,
+  QueryIntentClassification
+} from './signatures';
+import { WeaviateService } from '../weaviate';
+import { ClaudeService } from '../claude';
+
+export class OptimizedRAGPipeline extends dspy.Module {
+  private queryEnhancer: dspy.ChainOfThought<typeof QueryEnhancement>;
+  private documentReranker: dspy.ChainOfThought<typeof DocumentReranking>;
+  private answerGenerator: dspy.ChainOfThought<typeof AnswerGeneration>;
+  private intentClassifier: dspy.Predict<typeof QueryIntentClassification>;
+  private weaviateService: WeaviateService;
+
+  constructor() {
+    super();
+    this.queryEnhancer = dspy.ChainOfThought(QueryEnhancement);
+    this.documentReranker = dspy.ChainOfThought(DocumentReranking);
+    this.answerGenerator = dspy.ChainOfThought(AnswerGeneration);
+    this.intentClassifier = dspy.Predict(QueryIntentClassification);
+    this.weaviateService = new WeaviateService();
+  }
+
+  async forward(query: string, filters?: any) {
+    // Step 1: Classify query intent
+    const intent = await this.intentClassifier({
+      query
+    });
+
+    // Step 2: Enhance query based on intent
+    const enhanced = await this.queryEnhancer({
+      query,
+      context: `Intent: ${intent.intentType}, Entities: ${intent.entities}`
+    });
+
+    // Step 3: Retrieve documents from Weaviate
+    const searchResults = await this.weaviateService.hybridSearch(
+      enhanced.enhancedQuery,
+      {
+        ...filters,
+        documentTypes: intent.documentTypes,
+        limit: 30 // Get more candidates for reranking
+      }
+    );
+
+    // Step 4: Rerank documents
+    const reranked = await this.documentReranker({
+      query: enhanced.enhancedQuery,
+      documents: JSON.stringify(searchResults)
+    });
+
+    // Parse reranked documents
+    const topDocuments = JSON.parse(reranked.rerankedDocuments).slice(0, 10);
+
+    // Step 5: Generate answer
+    const answer = await this.answerGenerator({
+      query,
+      context: JSON.stringify(topDocuments),
+      requireSources: true
+    });
+
+    return {
+      query,
+      enhancedQuery: enhanced.enhancedQuery,
+      intent: intent.intentType,
+      entities: intent.entities,
+      documents: topDocuments,
+      answer: answer.answer,
+      sources: answer.sources,
+      confidence: answer.confidence
+    };
+  }
+}
+
+export class AdaptiveQueryOptimizer extends dspy.Module {
+  private stages: Map<string, dspy.Module>;
+  private performanceMetrics: Map<string, number>;
+
+  constructor() {
+    super();
+    this.stages = new Map();
+    this.performanceMetrics = new Map();
+    this.initializeStages();
+  }
+
+  private initializeStages() {
+    // Query enhancement variations
+    this.stages.set('basic_enhance', dspy.Predict(QueryEnhancement));
+    this.stages.set('cot_enhance', dspy.ChainOfThought(QueryEnhancement));
+    this.stages.set('react_enhance', dspy.ReAct(QueryEnhancement, tools=[]));
+
+    // Document reranking variations
+    this.stages.set('basic_rerank', dspy.Predict(DocumentReranking));
+    this.stages.set('cot_rerank', dspy.ChainOfThought(DocumentReranking));
+  }
+
+  async selectOptimalStage(taskType: string): Promise<dspy.Module> {
+    // Select stage based on historical performance
+    const stageKey = `${taskType}_${this.getBestPerformer(taskType)}`;
+    return this.stages.get(stageKey) || this.stages.get(`basic_${taskType}`);
+  }
+
+  private getBestPerformer(taskType: string): string {
+    const performances = Array.from(this.performanceMetrics.entries())
+      .filter(([key]) => key.startsWith(taskType))
+      .sort(([, a], [, b]) => b - a);
+
+    return performances.length > 0
+      ? performances[0][0].split('_')[1]
+      : 'basic';
+  }
+
+  async updatePerformance(stageKey: string, score: number) {
+    const currentScore = this.performanceMetrics.get(stageKey) || 0;
+    // Exponential moving average
+    const updatedScore = 0.7 * currentScore + 0.3 * score;
+    this.performanceMetrics.set(stageKey, updatedScore);
+  }
+}

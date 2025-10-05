@@ -9,13 +9,13 @@ async function inspectSchema() {
     const schema = await client.schema.getter().do();
     
     console.log('Available classes:');
-    schema.classes.forEach((cls: any) => {
+    (schema.classes || []).forEach((cls: any) => {
       console.log(`- ${cls.class}`);
     });
     console.log('\n');
-    
+
     // Find the VC_PE_Voyage_Binary_Production class
-    const targetClass = schema.classes.find((cls: any) => cls.class === 'VC_PE_Voyage_Binary_Production');
+    const targetClass = (schema.classes || []).find((cls: any) => cls.class === 'VC_PE_Voyage_Binary_Production');
     
     if (targetClass) {
       console.log('=== VC_PE_Voyage_Binary_Production Schema ===');
@@ -24,7 +24,7 @@ async function inspectSchema() {
       console.log(`Vectorizer: ${targetClass.vectorizer || 'Not specified'}`);
       console.log('\nProperties:');
       
-      targetClass.properties.forEach((prop: any) => {
+      (targetClass.properties || []).forEach((prop: any) => {
         console.log(`  - ${prop.name}`);
         console.log(`    Type: ${prop.dataType.join(', ')}`);
         console.log(`    Description: ${prop.description || 'No description'}`);
@@ -62,7 +62,7 @@ async function inspectSchema() {
     } else {
       console.log('VC_PE_Voyage_Binary_Production class not found!');
       console.log('\nAvailable classes:');
-      schema.classes.forEach((cls: any) => {
+      (schema.classes || []).forEach((cls: any) => {
         console.log(`- ${cls.class}`);
       });
     }

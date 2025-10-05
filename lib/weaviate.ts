@@ -1,34 +1,19 @@
 import { client, CLASSES } from '@/config/weaviate.config';
-import { Company, VCDocumentChunk, Investment } from '@/types/company';
-import { Investor } from '@/types/investor';
+import { Company, Document } from '@/types/company';
 
 export class WeaviateService {
-  // Semantic search across vectorized document chunks
+  // Semantic search across all documents
   static async semanticSearch(query: string, filters?: any) {
     try {
       const result = await client.graphql
         .get()
-        .withClassName('VC_PE_Voyage_Binary_Production')
-        .withFields([
-          'content',              // Main text content (was 'text')
-          'document_type', 
-          'section_type', 
-          'company_name', 
-          'chunk_id',
-          'document_id',
-          'chunk_index',
-          'token_count',          // Token count (was 'text_length')
-          'retrieval_score',      // Retrieval score (was 'extraction_confidence')
-          'file_path',            // File path (new field available)
-          'round_info',           // Round information (new field available)
-          'created_at',           // Creation timestamp
-          '_additional { score }' // Vector similarity score
-        ])
+        .withClassName('VC_PE_Claude97_Production')
+        .withFields('content document_type company_name _additional { score }')
         .withNearText({ concepts: [query] })
         .withLimit(20)
         .do();
 
-      return result.data.Get.VC_PE_Voyage_Binary_Production;
+      return result.data.Get.VC_PE_Claude97_Production;
     } catch (error) {
       console.error('Semantic search error:', error);
       throw error;
@@ -40,80 +25,28 @@ export class WeaviateService {
     try {
       const result = await client.graphql
         .get()
-        .withClassName('VC_PE_Voyage_Binary_Production')
-        .withFields([
-          'content',              // Main text content
-          'document_type', 
-          'section_type', 
-          'company_name', 
-          'chunk_id',
-          'document_id',
-          'chunk_index',
-          'token_count',          // Token count
-          'retrieval_score',      // Retrieval score
-          'file_path',            // File path
-          'round_info',           // Round information
-          'created_at',           // Creation timestamp
-          '_additional { score }' // BM25 similarity score
-        ])
+        .withClassName('VC_PE_Claude97_Production')
+        .withFields('content document_type company_name _additional { score }')
         .withBm25({ query })
         .withLimit(20)
         .do();
 
-      return result.data.Get.VC_PE_Voyage_Binary_Production;
+      // Debug logging removed for cleaner output
+
+      return result.data.Get.VC_PE_Claude97_Production;
     } catch (error) {
       console.error('BM25 search error:', error);
       throw error;
     }
   }
 
-  // BM25 keyword search
-  static async bm25Search(query: string) {
-    try {
-      const result = await client.graphql
-        .get()
-        .withClassName('VCDocumentChunk')
-        .withFields([
-          'content', 
-          'document_type', 
-          'section_type', 
-          'company_name', 
-          'chunk_id',
-          'document_id',
-          'chunk_index',
-          'token_count',
-          'confidence_score',
-          '_additional { score }'
-        ])
-        .withBm25({ query })
-        .withLimit(20)
-        .do();
-
-      return result.data.Get.VCDocumentChunk;
-    } catch (error) {
-      console.error('BM25 search error:', error);
-      throw error;
-    }
-  }
-
-  // Get all companies from structured collection
+  // Get all companies with their documents
   static async getCompanies(filters?: any): Promise<Company[]> {
     try {
       const result = await client.graphql
         .get()
-        .withClassName('Company')
-        .withFields([
-          'company_id',
-          'name',
-          'legal_name',
-          'jurisdiction',
-          'industry',
-          'sector',
-          'status',
-          'description',
-          'website',
-          'headquarters'
-        ])
+        .withClassName(CLASSES.COMPANY)
+        .withFields('name logo industry stage valuation investmentAmount ownershipPercentage metrics')
         .withLimit(100)
         .do();
 
@@ -125,252 +58,22 @@ export class WeaviateService {
   }
 
   // Get single company with all related data
-  static async getCompanyById(company_id: string): Promise<Company | null> {
+  static async getCompanyById(id: string): Promise<Company> {
     try {
       const result = await client.graphql
         .get()
-        .withClassName('Company')
+        .withClassName(CLASSES.COMPANY)
         .withWhere({
-          path: ['company_id'],
+          path: ['id'],
           operator: 'Equal',
-          valueString: company_id
+          valueString: id
         })
-        .withFields([
-          'company_id',
-          'name',
-          'legal_name',
-          'incorporation_date',
-          'jurisdiction',
-          'industry',
-          'sector',
-          'status',
-          'description',
-          'website',
-          'headquarters',
-          'created_at',
-          'updated_at'
-        ])
+        .withFields('name logo industry stage valuation investmentAmount ownershipPercentage metrics documents { ... on Document { title type uploadDate fileUrl extractedData verified } } investments { ... on Investment { round amount date leadInvestor participants preMoneyValuation postMoneyValuation } }')
         .do();
 
-      return result.data.Get.Company[0] || null;
+      return result.data.Get.Company[0];
     } catch (error) {
       console.error('Get company by ID error:', error);
-      throw error;
-    }
-  }
-
-  // Get investments for a company
-  static async getCompanyInvestments(company_id: string): Promise<Investment[]> {
-    try {
-      const result = await client.graphql
-        .get()
-        .withClassName('Investment')
-        .withWhere({
-          path: ['company_id'],
-          operator: 'Equal',
-          valueString: company_id
-        })
-        .withFields([
-          'investment_id',
-          'company_id',
-          'investor_id',
-          'round_type',
-          'round_name',
-          'round_sequence',
-          'round_date',
-          'investment_amount',
-          'currency',
-          'pre_money_valuation',
-          'post_money_valuation',
-          'status',
-          'verified'
-        ])
-        .withLimit(50)
-        .do();
-
-      return result.data.Get.Investment || [];
-    } catch (error) {
-      console.error('Get company investments error:', error);
-      throw error;
-    }
-  }
-
-  // Get portfolio for an investor
-  static async getInvestorPortfolio(investor_id: string): Promise<Investment[]> {
-    try {
-      const result = await client.graphql
-        .get()
-        .withClassName('Investment')
-        .withWhere({
-          path: ['investor_id'],
-          operator: 'Equal',
-          valueString: investor_id
-        })
-        .withFields([
-          'investment_id',
-          'company_id',
-          'investor_id',
-          'round_type',
-          'round_name',
-          'investment_amount',
-          'currency',
-          'round_date',
-          'status'
-        ])
-        .withLimit(50)
-        .do();
-
-      return result.data.Get.Investment || [];
-    } catch (error) {
-      console.error('Get investor portfolio error:', error);
-      throw error;
-    }
-  }
-
-  // Get all investors from structured collection
-  static async getInvestors(filters?: any): Promise<Investor[]> {
-    try {
-      const result = await client.graphql
-        .get()
-        .withClassName('Investor')
-        .withFields([
-          'investor_id',
-          'name',
-          'legal_name',
-          'investor_type',
-          'headquarters',
-          'portfolio_companies',
-          'active_investments'
-        ])
-        .withLimit(100)
-        .do();
-
-      return result.data.Get.Investor;
-    } catch (error) {
-      console.error('Get investors error:', error);
-      throw error;
-    }
-  }
-
-  // Get all investments from structured collection
-  static async getInvestments(filters?: any): Promise<Investment[]> {
-    try {
-      const result = await client.graphql
-        .get()
-        .withClassName('Investment')
-        .withFields([
-          'investment_id',
-          'company_id',
-          'investor_id',
-          'round_type',
-          'round_name',
-          'round_sequence',
-          'round_date',
-          'investment_amount',
-          'currency',
-          'liquidation_preference',
-          'participating',
-          'anti_dilution',
-          'board_seats',
-          'information_rights',
-          'status',
-          'supporting_document_ids',
-          'data_confidence',
-          'extraction_method',
-          'verified',
-          'created_at',
-          'updated_at'
-        ])
-        .withLimit(100)
-        .do();
-
-      return result.data.Get.Investment;
-    } catch (error) {
-      console.error('Get investments error:', error);
-      throw error;
-    }
-  }
-
-  // Portfolio analytics methods
-  static async getPortfolioOverview() {
-    try {
-      const [companies, investors, investments] = await Promise.all([
-        this.getCompanies(),
-        this.getInvestors(),
-        this.getInvestments()
-      ]);
-
-      const totalInvestment = investments.reduce(
-        (sum, inv) => sum + inv.investment_amount, 
-        0
-      );
-
-      const activeInvestments = investments.filter(
-        inv => inv.status === 'active'
-      ).length;
-
-      return {
-        totalCompanies: companies.length,
-        totalInvestors: investors.length,
-        totalInvestments: investments.length,
-        totalInvestmentAmount: totalInvestment,
-        activeInvestments,
-        averageInvestment: totalInvestment / investments.length
-      };
-    } catch (error) {
-      console.error('Get portfolio overview error:', error);
-      throw error;
-    }
-  }
-
-  // Find investments by amount range
-  static async findInvestmentsByAmount(minAmount: number, maxAmount?: number): Promise<Investment[]> {
-    try {
-      let whereCondition;
-      
-      if (maxAmount) {
-        whereCondition = {
-          operator: 'And',
-          operands: [
-            {
-              path: ['investment_amount'],
-              operator: 'GreaterThanEqual',
-              valueNumber: minAmount
-            },
-            {
-              path: ['investment_amount'],
-              operator: 'LessThanEqual',
-              valueNumber: maxAmount
-            }
-          ]
-        };
-      } else {
-        whereCondition = {
-          path: ['investment_amount'],
-          operator: 'GreaterThanEqual',
-          valueNumber: minAmount
-        };
-      }
-
-      const result = await client.graphql
-        .get()
-        .withClassName('Investment')
-        .withWhere(whereCondition)
-        .withFields([
-          'investment_id',
-          'company_id',
-          'investor_id',
-          'round_name',
-          'investment_amount',
-          'currency',
-          'round_date'
-        ])
-        .withLimit(50)
-        .do();
-
-      return result.data.Get.Investment || [];
-    } catch (error) {
-      console.error('Find investments by amount error:', error);
       throw error;
     }
   }

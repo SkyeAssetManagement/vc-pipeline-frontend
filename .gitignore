@@ -28,10 +28,18 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+.env.production
+
+# Service account keys - NEVER commit these!
+*.json
+vertex-express-key.json
+*-key.json
 
 # vercel
 .vercel
+add-vercel-env.bat
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.vercel
