@@ -1,143 +1,158 @@
 # Project TODOs
 
-## SmartExtraction Collection
+## Immediate Priorities
 
-### Completed ✓
-- [x] Create SmartExtraction collection with Voyage-3 vectorizer
-- [x] Build dynamic metadata extraction pipeline with Claude Sonnet 4.5
-- [x] Ingest 72 documents (Advanced Navigation, Wonde, SecureStack)
-- [x] Switch search endpoints to SmartExtraction collection
-- [x] Generate 1,241 chunks with Voyage-3 embeddings
-- [x] Implement schema-free field extraction (100+ unique fields)
+### Data Ingestion
+- [ ] Ingest remaining 7 portfolio companies to SmartExtraction
+- [ ] Monitor Voyage-3 API usage and costs during ingestion
+- [ ] Validate metadata extraction quality across all companies
+- [ ] Add document re-ingestion capability for updated files
 
-### Next Steps
-- [ ] Ingest remaining portfolio companies (7 more companies)
-- [ ] Add incremental ingestion for new documents
-- [ ] Monitor Voyage API usage and costs
-- [ ] Create admin dashboard for collection stats
+### Production Monitoring
+- [ ] Set up Braintrust dashboards for response time analysis
+- [ ] Monitor DSPy optimization triggers in production
+- [ ] Track model performance (Claude Sonnet 4.5 vs previous versions)
+- [ ] Create alerts for search latency > 10 seconds
 
 ## Search & Retrieval
 
-### Frontend Enhancements
-- [ ] Display extracted fields in search results UI
-- [ ] Add field-based filtering (e.g., filter by document_type, round_type)
-- [ ] Show metadata badges for each result
-- [ ] Create field exploration view
-
 ### Search Quality
-- [ ] Validate search precision/recall metrics
-- [ ] Compare hybrid vs semantic search performance
+- [ ] A/B test DSPy-enhanced vs direct search
+- [ ] Validate semantic vs hybrid search performance by query type
 - [ ] Implement query expansion for better recall
-- [ ] Add relevance feedback mechanism
+- [ ] Add user feedback mechanism (thumbs up/down on results)
 
-## Document Ingestion
+### Frontend UI
+- [ ] Display extracted_fields in search result cards
+- [ ] Add faceted filtering by document_type, round_info
+- [ ] Show metadata badges (Series A, $15M raised, etc.)
+- [ ] Create field exploration view (all unique fields across results)
+- [ ] Add document preview modal with highlighted matches
 
-### New Document Types
-- [ ] Add support for Word documents (.docx)
-- [ ] Implement OCR for scanned PDFs
-- [ ] Handle Excel spreadsheets for financial data
-- [ ] Process email chains (.eml, .msg)
+## DSPy Optimization
+
+### Training & Evaluation
+- [ ] Collect 50+ training examples for first optimization cycle
+- [ ] Set up automated evaluation on validation set
+- [ ] Track optimization improvements over time
+- [ ] Create manual review process for low-confidence examples
 
 ### Pipeline Improvements
-- [ ] Add retry logic for failed extractions
-- [ ] Implement parallel processing for faster ingestion
-- [ ] Create validation step to verify metadata quality
-- [ ] Add deduplication logic for duplicate files
+- [ ] Fine-tune reranking strategy (currently top 20 → 15)
+- [ ] Experiment with query enhancement techniques
+- [ ] Add few-shot examples for intent classification
+- [ ] Implement confidence-based routing (high confidence = skip reranking)
 
-## Monitoring & Observability
+## Infrastructure
 
-### Metrics Tracking
-- [ ] Create dashboard for extraction field statistics
-- [ ] Monitor embedding generation latency
-- [ ] Track Claude API costs per document
-- [ ] Set up alerts for extraction failures
+### Performance
+- [ ] Cache frequently accessed document chunks
+- [ ] Implement CDN for static assets
+- [ ] Optimize Weaviate query patterns
+- [ ] Add request deduplication for identical queries
 
-### Quality Metrics
-- [ ] Measure field extraction accuracy
-- [ ] Track metadata completeness per document type
-- [ ] Monitor search quality scores over time
-- [ ] Analyze user query patterns
-
-## Frontend Development
-
-### Search Interface
-- [ ] Improve result card design to show metadata
-- [ ] Add faceted search by extracted fields
-- [ ] Create document preview modal
-- [ ] Implement search history
-
-### Company Pages
-- [ ] Build company detail pages with all documents
-- [ ] Show investment timeline visualization
-- [ ] Display aggregated metrics from documents
-- [ ] Create document gallery view
-
-### Admin Tools
-- [ ] Build collection management interface
-- [ ] Add document re-ingestion tool
-- [ ] Create metadata editing interface
-- [ ] Implement batch operations UI
+### Scaling
+- [ ] Plan for 1000+ document collection
+- [ ] Implement async job queue for ingestion
+- [ ] Add rate limiting on API endpoints (100 req/min)
+- [ ] Set up automated backups for Weaviate collection
 
 ## Data Quality
 
 ### Validation
 - [ ] Create test suite for various document types
-- [ ] Validate extraction consistency across similar docs
-- [ ] Test edge cases (empty docs, corrupted PDFs, non-English)
-- [ ] Benchmark extraction quality vs manual labeling
+- [ ] Benchmark extraction quality against manual labeling (target: 90%+ accuracy)
+- [ ] Test edge cases (scanned PDFs, non-English, redacted sections)
+- [ ] Validate financial data extraction (amounts, percentages, dates)
 
-### Improvements
+### Metadata Improvements
+- [ ] Add confidence scores to extracted_fields
+- [ ] Implement human-in-the-loop validation for critical fields
+- [ ] Create feedback loop for incorrect extractions
 - [ ] Fine-tune extraction prompts per document type
-- [ ] Add confidence scores for extracted fields
-- [ ] Implement human-in-the-loop validation
-- [ ] Create feedback mechanism for incorrect extractions
 
-## Infrastructure
+## Feature Enhancements
 
-### Performance
-- [ ] Optimize chunking strategy for better retrieval
-- [ ] Implement caching for frequently accessed documents
-- [ ] Add CDN for static assets
-- [ ] Optimize Weaviate query performance
+### Advanced Search
+- [ ] Multi-document relationship extraction (term sheet → cap table)
+- [ ] Temporal tracking (company metrics over time)
+- [ ] Cross-company benchmarking queries
+- [ ] Saved searches and alerts
 
-### Scaling
-- [ ] Plan for 1000+ document ingestion
-- [ ] Implement queue system for async processing
-- [ ] Add rate limiting for API endpoints
-- [ ] Set up database backups
+### Company Pages
+- [ ] Build company detail pages with all documents
+- [ ] Investment timeline visualization
+- [ ] Aggregated metrics dashboard
+- [ ] Document gallery view with filters
 
-## Future Enhancements
-
-### Advanced Features
-- [ ] Multi-document relationship extraction (e.g., link term sheet to cap table)
-- [ ] Temporal tracking (track company metrics over time)
-- [ ] Cross-company benchmarking
-- [ ] Automated insight generation from trends
-
-### AI Improvements
-- [ ] Implement active learning for field discovery
-- [ ] Add entity linking across documents
-- [ ] Create summary generation for long documents
-- [ ] Build question-answering system
-
-### Integrations
-- [ ] Connect to CRM systems
-- [ ] Integrate with data rooms
-- [ ] Add Slack notifications for new documents
-- [ ] Build API for third-party access
+### Admin Tools
+- [ ] Collection management interface
+- [ ] Batch document operations
+- [ ] Metadata editing interface
+- [ ] Ingestion job monitoring dashboard
 
 ## Documentation
 
-### Technical
-- [ ] Create API documentation with examples
+### Technical Docs
+- [ ] Create API documentation with Swagger/OpenAPI
 - [ ] Write ingestion troubleshooting guide
-- [ ] Document extraction prompt engineering
-- [ ] Add deployment guide
+- [ ] Document DSPy optimization process
+- [ ] Add deployment guide for new environments
 
 ### User Guides
-- [ ] Create search best practices guide
-- [ ] Write document preparation guidelines
-- [ ] Build video tutorials for key features
-- [ ] Document supported file formats
+- [ ] Search best practices guide
+- [ ] Document preparation guidelines
+- [ ] Video tutorials for key features
+- [ ] FAQ for common issues
 
-This TODO list reflects the current state after SmartExtraction launch and outlines the path forward for enhanced features and production readiness.
+## Future Exploration
+
+### AI Improvements
+- [ ] Experiment with GPT-4 for metadata extraction comparison
+- [ ] Test alternative embedding models (OpenAI, Cohere)
+- [ ] Implement entity linking across documents
+- [ ] Create automated insight generation from patterns
+
+### Integrations
+- [ ] Connect to CRM systems (Salesforce, HubSpot)
+- [ ] Integrate with data rooms (Datasite, Intralinks)
+- [ ] Add Slack notifications for document updates
+- [ ] Build REST API for third-party access
+
+### New Document Types
+- [ ] Add support for Word documents (.docx)
+- [ ] Implement OCR for scanned PDFs
+- [ ] Process Excel spreadsheets (.xlsx)
+- [ ] Handle email chains (.eml, .msg)
+
+## Maintenance
+
+### Code Quality
+- [ ] Add unit tests for core services (target: 70% coverage)
+- [ ] Set up E2E tests for critical user flows
+- [ ] Implement TypeScript strict mode
+- [ ] Add error boundary components
+
+### DevOps
+- [ ] Set up CI/CD pipeline for automated testing
+- [ ] Create staging environment for testing
+- [ ] Implement blue-green deployments
+- [ ] Add performance regression testing
+
+## Completed ✓
+
+### October 2025 - SmartExtraction Launch
+- [x] Created SmartExtraction collection with Voyage-3
+- [x] Built dynamic metadata extraction pipeline
+- [x] Ingested 72 documents across 3 companies (1,241 chunks)
+- [x] Migrated all search endpoints to SmartExtraction
+- [x] Updated to Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
+- [x] Fixed DSPy hybrid search alpha parameter (0.7)
+- [x] Added response time tracking to all endpoints
+- [x] Integrated Braintrust for production monitoring
+- [x] Deployed to Vercel with environment variables
+- [x] Implemented schema-free field extraction (100+ unique fields)
+- [x] Created OptimizedWeaviateService for filtered searches
+- [x] Built DSPyEnhancedRAGService with automatic optimization
+
+This TODO list reflects the current production state and prioritizes immediate next steps for scaling, quality, and feature development.
