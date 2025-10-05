@@ -26,6 +26,7 @@ function enhanceQueryWithContext(query: string): string {
 }
 
 export async function POST(request: NextRequest) {
+  const overallStartTime = Date.now();
   const body = await request.json();
 
   return withBraintrustTracing(
@@ -36,13 +37,16 @@ export async function POST(request: NextRequest) {
           query,
           filters,
           searchType = 'hybrid',
-          useOptimizedCollection = true
+          useOptimizedCollection = true,
+          userId,
+          sessionId
         } = body;
 
     if (!query || query.trim().length === 0) {
       return NextResponse.json({
         success: false,
-        error: 'Search query is required'
+        error: 'Search query is required',
+        responseTimeMs: Date.now() - overallStartTime
       }, { status: 400 });
     }
 
@@ -249,6 +253,8 @@ export async function POST(request: NextRequest) {
       useOptimizedCollection
     });
 
+    const responseTimeMs = Date.now() - overallStartTime;
+
     return NextResponse.json({
       success: true,
       query,
@@ -262,6 +268,9 @@ export async function POST(request: NextRequest) {
       searchType,
       filters: filters || {},
       useOptimizedCollection,
+      responseTimeMs,
+      modelVersion: 'claude-sonnet-4-5-20250929',
+      timestamp: new Date().toISOString(),
       metadata: {
         hasStructuredData: processedResults.some((r: any) => r.hasInvestmentAmount || r.hasValuation || r.hasOwnership),
         averageConfidence: processedResults.length > 0 ? processedResults.reduce((sum: number, r: any) => sum + r.extractionConfidence, 0) / processedResults.length : 0,
@@ -283,7 +292,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success: false,
           error: error instanceof Error ? error.message : 'Search failed',
-          details: process.env.NODE_ENV === 'development' ? error : undefined
+          details: process.env.NODE_ENV === 'development' ? error : undefined,
+          responseTimeMs: Date.now() - overallStartTime
         }, { status: 500 });
       }
     },

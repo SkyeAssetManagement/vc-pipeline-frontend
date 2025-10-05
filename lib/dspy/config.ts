@@ -7,7 +7,7 @@ export interface DSPyConfig {
 }
 
 export const DSPY_CONFIG: DSPyConfig = {
-  llm: 'claude-sonnet-4-20250514',
+  llm: 'claude-sonnet-4-5-20250929',
   retriever: 'weaviate-hybrid',
   optimizer: 'BootstrapFewShotWithRandomSearch',
   maxBootstrapExamples: 20,

@@ -8,7 +8,7 @@ const anthropic = createAnthropic({
 });
 
 // Wrap the model with Braintrust for automatic tracing
-export const getClaudeModel = (modelName: string = 'claude-3-5-sonnet-20241022') => {
+export const getClaudeModel = (modelName: string = 'claude-sonnet-4-5-20250929') => {
   const model = anthropic(modelName);
 
   // Only wrap if Braintrust API key is available

@@ -26,7 +26,7 @@ export class ClaudeService {
       const prompt = this.createPrompt(query, context);
 
       const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5-20250929',
         max_tokens: 1000,
         temperature: 0.1, // Low temperature for more consistent, factual responses
         messages: [{

@@ -11,7 +11,7 @@ export class DSPyEnhancedRAGService {
   private weaviateService: WeaviateService;
   private lastOptimizationTime: Date | null = null;
   private performanceHistory: number[] = [];
-  private currentModelVersion: string = 'claude-sonnet-4-20250514';
+  private currentModelVersion: string = 'claude-sonnet-4-5-20250929';
 
   constructor() {
     this.optimizer = new DSPyOptimizer();

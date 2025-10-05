@@ -33,6 +33,8 @@ function enhanceQueryWithInvestors(query: string): string {
 const dspyRAGService = new DSPyEnhancedRAGService();
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+
   try {
     const body = await request.json();
     const { query, filters, searchType = 'hybrid', userId, sessionId } = body;
@@ -40,7 +42,8 @@ export async function POST(request: NextRequest) {
     if (!query || query.trim().length === 0) {
       return NextResponse.json({
         success: false,
-        error: 'Search query is required'
+        error: 'Search query is required',
+        responseTimeMs: Date.now() - startTime
       }, { status: 400 });
     }
 
@@ -51,10 +54,13 @@ export async function POST(request: NextRequest) {
     // Use DSPy-enhanced RAG service for optimized search
     const result = await dspyRAGService.search(query, filters, userId, sessionId);
 
+    const responseTimeMs = Date.now() - startTime;
+
     console.log('✅ DSPy search completed:', {
       resultsCount: result.totalResults,
       confidence: result.confidence,
-      sources: result.sources?.length || 0
+      sources: result.sources?.length || 0,
+      responseTimeMs
     });
 
     return NextResponse.json({
@@ -69,7 +75,10 @@ export async function POST(request: NextRequest) {
       sources: result.sources,
       totalResults: result.totalResults,
       searchType,
-      filters: filters || {}
+      filters: filters || {},
+      responseTimeMs,
+      modelVersion: 'claude-sonnet-4-5-20250929',
+      timestamp: new Date().toISOString()
     });
 
   } catch (error) {
@@ -78,7 +87,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Search failed',
-      details: process.env.NODE_ENV === 'development' ? error : undefined
+      details: process.env.NODE_ENV === 'development' ? error : undefined,
+      responseTimeMs: Date.now() - startTime
     }, { status: 500 });
   }
 }
