@@ -2,40 +2,38 @@ import { client, CLASSES } from '@/config/weaviate.config';
 import { Company, Document } from '@/types/company';
 
 export class WeaviateService {
-  // Semantic search across all documents
+  // Semantic search using SmartExtraction collection with Voyage-3 embeddings
   static async semanticSearch(query: string, filters?: any) {
     try {
       const result = await client.graphql
         .get()
-        .withClassName('VC_PE_Claude97_Production')
-        .withFields('content document_type company_name _additional { score }')
+        .withClassName('SmartExtraction')
+        .withFields('content company_name file_path extracted_fields _additional { score }')
         .withNearText({ concepts: [query] })
         .withLimit(20)
         .do();
 
-      return result.data.Get.VC_PE_Claude97_Production;
+      return result.data.Get.SmartExtraction;
     } catch (error) {
       console.error('Semantic search error:', error);
       throw error;
     }
   }
 
-  // BM25 keyword search (since collection has no vectorizer, use this instead of hybrid)
-  static async hybridSearch(query: string, alpha: number = 0.5) {
+  // Hybrid search using SmartExtraction collection
+  static async hybridSearch(query: string, alpha: number = 0.7) {
     try {
       const result = await client.graphql
         .get()
-        .withClassName('VC_PE_Claude97_Production')
-        .withFields('content document_type company_name _additional { score }')
-        .withBm25({ query })
+        .withClassName('SmartExtraction')
+        .withFields('content company_name file_path extracted_fields chunk_id _additional { score }')
+        .withHybrid({ query, alpha })
         .withLimit(20)
         .do();
 
-      // Debug logging removed for cleaner output
-
-      return result.data.Get.VC_PE_Claude97_Production;
+      return result.data.Get.SmartExtraction;
     } catch (error) {
-      console.error('BM25 search error:', error);
+      console.error('Hybrid search error:', error);
       throw error;
     }
   }

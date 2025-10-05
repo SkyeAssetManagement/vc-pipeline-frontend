@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.22",
-    "@anthropic-ai/sdk": "^0.63.0",
+    "@anthropic-ai/sdk": "^0.63.1",
     "@apollo/client": "^4.0.4",
     "@auth/prisma-adapter": "^2.10.0",
     "@headlessui/react": "^2.2.7",
@@ -35,6 +35,7 @@
     "next": "^14.0.0",
     "next-auth": "^4.24.11",
     "papaparse": "^5.5.3",
+    "pdf-parse": "^2.1.7",
     "prisma": "^6.15.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
@@ -44,6 +45,7 @@
     "react-pdf": "^10.1.0",
     "recharts": "^3.2.0",
     "tailwind-merge": "^3.3.1",
+    "voyageai": "^0.0.8",
     "weaviate-ts-client": "^2.2.0",
     "zod": "^4.1.5"
   },

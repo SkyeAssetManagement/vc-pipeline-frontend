@@ -87,17 +87,28 @@ export async function POST(request: NextRequest) {
       searchResults = [];
     }
 
-    // Process and format results from Weaviate
-    const processedResults = searchResults.map((result: any, index: number) => ({
-      id: `result-${index}`,
-      type: 'document',
-      title: result.document_type || 'Document',
-      company: result.company_name || 'Unknown Company',
-      snippet: result.content ? result.content.substring(0, 200) + '...' : 'No content available',
-      content: result.content,
-      documentType: result.document_type,
-      score: result._additional?.score || 0
-    }));
+    // Process and format results from Weaviate SmartExtraction collection
+    const processedResults = searchResults.map((result: any, index: number) => {
+      // Parse extracted fields from JSON
+      let extractedFields = {};
+      try {
+        extractedFields = result.extracted_fields ? JSON.parse(result.extracted_fields) : {};
+      } catch (e) {
+        console.warn('Failed to parse extracted_fields:', e);
+      }
+
+      return {
+        id: result.chunk_id || `result-${index}`,
+        type: 'document',
+        title: extractedFields.document_type || result.file_path?.split('/').pop() || 'Document',
+        company: result.company_name || 'Unknown Company',
+        snippet: result.content ? result.content.substring(0, 200) + '...' : 'No content available',
+        content: result.content,
+        filePath: result.file_path,
+        extractedFields: extractedFields, // Include all dynamically extracted metadata
+        score: result._additional?.score || 0
+      };
+    });
 
     // Group results by company for better organization
     const groupedResults = processedResults.reduce((acc: any, result: any) => {
