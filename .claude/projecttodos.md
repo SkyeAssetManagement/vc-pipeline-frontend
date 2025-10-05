@@ -1,126 +1,143 @@
 # Project TODOs
 
-## Dynamic RAG System
+## SmartExtraction Collection
 
 ### Completed ✓
-- [x] Implement LLM-driven field extraction without schemas
-- [x] Integrate Voyage-3 embeddings for contextual chunking
-- [x] Process Advanced Navigation & Wonde documents (18 docs)
-- [x] Create verification scripts for collection validation
+- [x] Create SmartExtraction collection with Voyage-3 vectorizer
+- [x] Build dynamic metadata extraction pipeline with Claude Sonnet 4.5
+- [x] Ingest 72 documents (Advanced Navigation, Wonde, SecureStack)
+- [x] Switch search endpoints to SmartExtraction collection
+- [x] Generate 1,241 chunks with Voyage-3 embeddings
+- [x] Implement schema-free field extraction (100+ unique fields)
 
 ### Next Steps
-- [ ] Process remaining 8 companies as out-of-sample data
-- [ ] Implement DSPy optimization loop for dynamic extraction
-- [ ] Compare performance vs fixed 97-field schema
-- [ ] Add frontend interface for dynamic collection search
-- [ ] Create batch processing pipeline for all PDFs
+- [ ] Ingest remaining portfolio companies (7 more companies)
+- [ ] Add incremental ingestion for new documents
+- [ ] Monitor Voyage API usage and costs
+- [ ] Create admin dashboard for collection stats
 
-## DSPy Optimization
+## Search & Retrieval
 
-### Training Data
-- [ ] Collect 50+ training examples to trigger optimization
-- [ ] Store high-confidence query results
-- [ ] Implement persistence for training examples
+### Frontend Enhancements
+- [ ] Display extracted fields in search results UI
+- [ ] Add field-based filtering (e.g., filter by document_type, round_type)
+- [ ] Show metadata badges for each result
+- [ ] Create field exploration view
 
-### Integration
-- [ ] Connect dynamic RAG with DSPy optimizer
-- [ ] Add feedback loop from retrieval to extraction
-- [ ] Implement iterative improvement based on search quality
+### Search Quality
+- [ ] Validate search precision/recall metrics
+- [ ] Compare hybrid vs semantic search performance
+- [ ] Implement query expansion for better recall
+- [ ] Add relevance feedback mechanism
 
-## Search System Enhancement
+## Document Ingestion
 
-### Dynamic Collection Integration
-- [ ] Add `DynamicCompaniesComplete` to search endpoints
-- [ ] Create UI toggle for fixed vs dynamic schema search
-- [ ] Display dynamically extracted fields in results
-- [ ] Show field diversity metrics in admin panel
-
-### Performance
-- [ ] Optimize Voyage-3 embedding generation
-- [ ] Implement caching for dynamic field queries
-- [ ] Add parallel processing for bulk ingestion
-- [ ] Reduce extraction time per document
-
-## Data Processing
-
-### Document Ingestion
-- [ ] Complete ingestion of all company documents with Voyage
+### New Document Types
 - [ ] Add support for Word documents (.docx)
 - [ ] Implement OCR for scanned PDFs
-- [ ] Create incremental update pipeline
+- [ ] Handle Excel spreadsheets for financial data
+- [ ] Process email chains (.eml, .msg)
 
-### Quality Assurance
-- [ ] Validate extraction accuracy across document types
-- [ ] Compare Voyage-3 vs OpenAI embedding quality
-- [ ] Measure field coverage per document type
-- [ ] Test retrieval precision/recall metrics
+### Pipeline Improvements
+- [ ] Add retry logic for failed extractions
+- [ ] Implement parallel processing for faster ingestion
+- [ ] Create validation step to verify metadata quality
+- [ ] Add deduplication logic for duplicate files
+
+## Monitoring & Observability
+
+### Metrics Tracking
+- [ ] Create dashboard for extraction field statistics
+- [ ] Monitor embedding generation latency
+- [ ] Track Claude API costs per document
+- [ ] Set up alerts for extraction failures
+
+### Quality Metrics
+- [ ] Measure field extraction accuracy
+- [ ] Track metadata completeness per document type
+- [ ] Monitor search quality scores over time
+- [ ] Analyze user query patterns
+
+## Frontend Development
+
+### Search Interface
+- [ ] Improve result card design to show metadata
+- [ ] Add faceted search by extracted fields
+- [ ] Create document preview modal
+- [ ] Implement search history
+
+### Company Pages
+- [ ] Build company detail pages with all documents
+- [ ] Show investment timeline visualization
+- [ ] Display aggregated metrics from documents
+- [ ] Create document gallery view
+
+### Admin Tools
+- [ ] Build collection management interface
+- [ ] Add document re-ingestion tool
+- [ ] Create metadata editing interface
+- [ ] Implement batch operations UI
+
+## Data Quality
+
+### Validation
+- [ ] Create test suite for various document types
+- [ ] Validate extraction consistency across similar docs
+- [ ] Test edge cases (empty docs, corrupted PDFs, non-English)
+- [ ] Benchmark extraction quality vs manual labeling
+
+### Improvements
+- [ ] Fine-tune extraction prompts per document type
+- [ ] Add confidence scores for extracted fields
+- [ ] Implement human-in-the-loop validation
+- [ ] Create feedback mechanism for incorrect extractions
 
 ## Infrastructure
 
-### Monitoring
-- [ ] Track dynamic field extraction statistics
-- [ ] Monitor Voyage API usage and costs
-- [ ] Set up alerts for extraction failures
-- [ ] Create dashboard for field diversity metrics
+### Performance
+- [ ] Optimize chunking strategy for better retrieval
+- [ ] Implement caching for frequently accessed documents
+- [ ] Add CDN for static assets
+- [ ] Optimize Weaviate query performance
 
 ### Scaling
-- [ ] Optimize for 100+ company processing
+- [ ] Plan for 1000+ document ingestion
 - [ ] Implement queue system for async processing
-- [ ] Add distributed processing support
-- [ ] Set up auto-scaling for heavy loads
-
-## Frontend Updates
-
-### UI Components
-- [ ] Display extracted fields in search results
-- [ ] Add field filtering capabilities
-- [ ] Show confidence scores for dynamic extractions
-- [ ] Create field exploration interface
-
-### Visualization
-- [ ] Build field frequency charts
-- [ ] Create document type distribution view
-- [ ] Add extraction quality metrics display
-- [ ] Implement field relationship graph
-
-## Testing & Validation
-
-### Dynamic RAG Testing
-- [ ] Create test suite for various document types
-- [ ] Validate extraction consistency
-- [ ] Test edge cases (empty docs, corrupted PDFs)
-- [ ] Benchmark against fixed schema approach
-
-### Integration Tests
-- [ ] Test end-to-end pipeline with Voyage
-- [ ] Validate search quality with dynamic fields
-- [ ] Test DSPy optimization with dynamic data
-- [ ] Cross-validate extraction results
-
-## Documentation
-
-### Technical Docs
-- [ ] Document dynamic extraction methodology
-- [ ] Create Voyage integration guide
-- [ ] Write field mapping documentation
-- [ ] Add troubleshooting guide for extraction issues
-
-### API Documentation
-- [ ] Document dynamic collection endpoints
-- [ ] Add examples for field-based queries
-- [ ] Create migration guide from fixed schema
-- [ ] Document performance benchmarks
+- [ ] Add rate limiting for API endpoints
+- [ ] Set up database backups
 
 ## Future Enhancements
 
 ### Advanced Features
-- [ ] Multi-document relationship extraction
-- [ ] Temporal field tracking (changes over time)
-- [ ] Cross-company field comparison
-- [ ] Automated insight generation from fields
+- [ ] Multi-document relationship extraction (e.g., link term sheet to cap table)
+- [ ] Temporal tracking (track company metrics over time)
+- [ ] Cross-company benchmarking
+- [ ] Automated insight generation from trends
 
-### ML Improvements
-- [ ] Fine-tune extraction prompts per doc type
+### AI Improvements
 - [ ] Implement active learning for field discovery
-- [ ] Add confidence calibration for extractions
-- [ ] Create field importance ranking system
+- [ ] Add entity linking across documents
+- [ ] Create summary generation for long documents
+- [ ] Build question-answering system
+
+### Integrations
+- [ ] Connect to CRM systems
+- [ ] Integrate with data rooms
+- [ ] Add Slack notifications for new documents
+- [ ] Build API for third-party access
+
+## Documentation
+
+### Technical
+- [ ] Create API documentation with examples
+- [ ] Write ingestion troubleshooting guide
+- [ ] Document extraction prompt engineering
+- [ ] Add deployment guide
+
+### User Guides
+- [ ] Create search best practices guide
+- [ ] Write document preparation guidelines
+- [ ] Build video tutorials for key features
+- [ ] Document supported file formats
+
+This TODO list reflects the current state after SmartExtraction launch and outlines the path forward for enhanced features and production readiness.

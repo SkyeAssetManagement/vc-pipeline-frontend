@@ -1,179 +1,251 @@
 # VC Pipeline Frontend - Code Documentation
 
 ## Project Overview
-AI-powered venture capital portfolio management platform featuring:
-- DSPy-style self-improving RAG system
-- Dynamic field extraction without predefined schemas
-- Weaviate vector database with Voyage-3 embeddings
-- Braintrust observability for intelligent document search
+AI-powered venture capital portfolio management platform with intelligent document search and dynamic metadata extraction.
 
 ## Tech Stack
-- **Framework**: Next.js 14.2.32 (App Router)
-- **Language**: TypeScript
-- **Database**: Weaviate Cloud (Hybrid Search)
-- **AI Models**:
-  - Claude Sonnet 4 (RAG synthesis)
-  - Claude 3.5 Sonnet (field extraction)
-- **Embeddings**: Voyage-3 (contextual chunking)
-- **Optimization**: DSPy TypeScript implementation
-- **Observability**: Braintrust
+- **Framework**: Next.js 14.2.32 (App Router, TypeScript)
+- **Vector Database**: Weaviate Cloud
+- **AI Models**: Claude Sonnet 4.5 (metadata extraction, answer synthesis)
+- **Embeddings**: Voyage-3 (1024-dimensional contextual vectors)
+- **Observability**: Braintrust (metrics tracking)
 - **Deployment**: Vercel
 
-## Architecture & Design
+## Core Architecture
 
-### Core Systems
+### 1. SmartExtraction Collection (Active)
+**Schema-free document ingestion with Voyage-3 embeddings:**
 
-#### 1. Dynamic RAG System (NEW)
-**LLM-driven field extraction without schemas:**
-- **Adaptive Extraction**: Claude determines relevant fields per document
-- **Document Types**: Automatically classifies (pitch_deck, financial_report, etc.)
-- **No Fixed Schema**: 122+ unique fields discovered dynamically
-- **Collections**:
-  - `DynamicCompanies`: 18 docs with dynamic fields
-  - `DynamicCompaniesComplete`: Full ingestion with Voyage embeddings
+**Fields:**
+- `content`: Document text chunks (vectorized)
+- `company_name`: Company identifier
+- `file_path`: Original document path
+- `chunk_id`: Unique chunk identifier
+- `chunk_index`: Position in document
+- `extracted_fields`: **Dynamic JSON metadata** (no fixed schema)
+- `created_at`: Ingestion timestamp
 
-#### 2. DSPy-Style Optimization
-**Self-improving multi-stage pipeline:**
-- **Intent Classification**: Categorizes queries
-- **Query Enhancement**: Preserves entities while adding context
-- **Document Retrieval**: Weaviate hybrid search
-- **Document Reranking**: AI-powered relevance scoring
-- **Answer Generation**: Claude synthesis with confidence
+**Key Features:**
+- Each document extracts unique metadata based on content
+- No predefined field constraints
+- Claude Sonnet 4.5 analyzes content and determines relevant fields
+- Voyage-3 embeddings for semantic search
 
-**Optimization Process:**
-- Collects high-confidence queries as training examples
-- Triggers after 50+ examples
-- Performance metrics: Relevance (30%), Completeness (25%), Accuracy (25%), Source Quality (20%)
+**Current Data:**
+- **72 documents** ingested across 3 companies
+- **1,241 chunks** with embeddings
+- Companies: Advanced Navigation, Wonde, SecureStack
 
-#### 3. Search System
-**Three search endpoints:**
-- `/api/search-optimized`: Standard Weaviate search
-- `/api/search-dspy`: DSPy-enhanced with learning
-- `/api/search`: Legacy endpoint
+### 2. Search System
 
-### Data Processing Pipeline
-
-#### Document Ingestion (VC-Pipeline Backend)
-1. **PDF Processing**: PyPDF2 extraction
-2. **Dynamic Field Extraction**: Claude analyzes content
-3. **Embedding Generation**: Voyage-3 contextual embeddings
-4. **Weaviate Storage**: With extracted fields as JSON
-
-**Processed Companies:**
-- Advanced Navigation: 9+ documents
-- Wonde: 9+ documents
-
-### Weaviate Collections
-- `VC_PE_Claude97_Production`: Fixed 97-field schema
-- `DynamicCompanies`: Dynamic schema collection
-- `DynamicCompaniesComplete`: Production with Voyage-3
-
-## API Endpoints
-
-### `/api/search-dspy` (POST)
+#### Primary Endpoint: `/api/search` (POST)
 ```typescript
 {
   query: string,
-  filters?: object,
-  userId: string,
-  sessionId: string
+  filters?: { company?: string, documentType?: string },
+  searchType?: 'semantic' | 'hybrid',
+  userId?: string,
+  sessionId?: string
 }
-// Returns: answer, sources, confidence, optimizationStatus
-```
 
-### `/api/search-optimized` (POST)
-```typescript
+// Returns:
 {
-  query: string,
-  searchType: 'hybrid',
-  useOptimizedCollection: boolean
+  success: true,
+  results: [
+    {
+      id: string,
+      company: string,
+      content: string,
+      extractedFields: object,  // Dynamic metadata!
+      score: number
+    }
+  ],
+  aiAnswer: string,            // Claude-synthesized answer
+  confidence: 'high' | 'medium' | 'low',
+  sources: string[]
 }
 ```
 
-## Dynamic Field Extraction Examples
+**Search Methods:**
+- **Semantic**: Vector similarity using Voyage-3 embeddings
+- **Hybrid**: Combines vector + BM25 keyword search (default)
 
-### Legal Documents
-- `company_acn`, `warrant_details`, `amendment_date`
+#### Search Service (`lib/weaviate.ts`)
+```typescript
+WeaviateService.semanticSearch(query, filters)
+WeaviateService.hybridSearch(query, alpha = 0.7)
+```
 
-### Investment Memos
-- `round_size: USD $60M`
-- `pre_money_valuation: USD $250M`
-- `use_of_funds: {sales: 40%, r&d: 40%}`
+### 3. Document Ingestion Pipeline
 
-### Company Updates
-- `employee_count: 200`
-- `revenue_growth: 83% YoY`
-- `key_customers: [Tesla, Lockheed Martin]`
+#### Ingestion Script: `scripts/ingest-documents.js`
 
-## Environment Configuration
+**Process Flow:**
+1. **PDF Extraction**: Extract text using pdf-parse
+2. **Chunking**: Split into 1000-char chunks with 200-char overlap
+3. **Metadata Extraction**: Claude Sonnet 4.5 analyzes content
+4. **Embedding Generation**: Voyage-3 creates semantic vectors
+5. **Batch Insert**: Store in Weaviate SmartExtraction collection
+
+**Key Functions:**
+- `extractTextFromPDF(pdfPath)`: PDF to text extraction
+- `extractMetadata(content, fileName, companyName)`: Claude dynamic field extraction
+- `chunkText(text, chunkSize, overlap)`: Smart text chunking
+- `generateEmbeddings(texts)`: Voyage-3 embedding generation
+- `processPDF(pdfPath, companyName)`: Full pipeline per document
+
+**Configuration:**
+- Chunk size: 1000 characters
+- Overlap: 200 characters
+- Embedding model: voyage-3
+- Metadata model: claude-sonnet-4-5-20250929
+
+### 4. Dynamic Metadata Extraction
+
+**How It Works:**
+Claude analyzes document content and extracts relevant fields automatically.
+
+**Examples by Document Type:**
+
+**Pitch Deck:**
+```json
+{
+  "document_type": "pitch_deck",
+  "industry": "Robotics & Navigation",
+  "founders": ["Xavier Orr", "Chris Shaw"],
+  "total_employees": 200,
+  "target_markets": ["Defense", "Mining", "Autonomous Vehicles"],
+  "total_addressable_market_usd": 50000000000
+}
+```
+
+**Term Sheet:**
+```json
+{
+  "document_type": "term_sheet",
+  "round_type": "Series A",
+  "total_raise_amount": 15000000,
+  "pre_money_valuation": 65000000,
+  "share_price": 32.98,
+  "investors": ["Arrochar Pty Ltd", "Main Sequence"],
+  "share_class": "Preference A"
+}
+```
+
+**Financial Statement:**
+```json
+{
+  "document_type": "balance_sheet",
+  "date": "2019-07-31",
+  "total_assets": 2456789,
+  "total_liabilities": 1234567,
+  "net_assets": 1222222,
+  "currency": "GBP"
+}
+```
+
+**Employment Contract:**
+```json
+{
+  "document_type": "employment_agreement",
+  "employee_name": "John Smith",
+  "job_title": "Senior Engineer",
+  "employment_type": "Full-time",
+  "ordinary_hours_per_week": 38,
+  "work_location": "Sydney Office"
+}
+```
+
+### 5. Weaviate Configuration
+
+**Client Setup (`config/weaviate.config.ts`):**
+```typescript
+export const client = weaviate.client({
+  scheme: 'https',
+  host: process.env.NEXT_PUBLIC_WEAVIATE_HOST,
+  apiKey: new ApiKey(process.env.WEAVIATE_API_KEY),
+  headers: {
+    'X-OpenAI-Api-Key': process.env.OPENAI_API_KEY,
+    'X-VoyageAI-Api-Key': process.env.VOYAGE_API_KEY
+  }
+});
+```
+
+**SmartExtraction Schema:**
+- Vectorizer: `text2vec-voyageai`
+- Model: `voyage-3`
+- Vector dimension: 1024
+- Truncation: Enabled
+
+### 6. AI Answer Synthesis
+
+**Process (`lib/claude.ts`):**
+1. User submits query
+2. Weaviate performs semantic/hybrid search
+3. Top results grouped by company
+4. Claude Sonnet 4.5 synthesizes comprehensive answer
+5. Includes confidence score and source citations
+
+**Claude Service:**
+```typescript
+ClaudeService.generateAnswer(query, results, companyGroups)
+// Returns: { answer, confidence, sources }
+```
+
+### 7. Braintrust Observability
+
+**Tracked Metrics (`lib/braintrust-enhanced.ts`):**
+- Search quality scores
+- Result count and relevance
+- AI synthesis performance
+- Confidence calibration
+- Source quality metrics
+
+**Usage:**
+```typescript
+await tracedOperation(
+  'weaviate-hybrid-search',
+  async () => await WeaviateService.hybridSearch(query),
+  { input, userId, sessionId },
+  (results) => ({ resultCount, hasResults, searchQuality })
+);
+```
+
+## Environment Variables
 
 ```env
 # Weaviate
-WEAVIATE_URL=[weaviate-cloud-url]
+NEXT_PUBLIC_WEAVIATE_SCHEME=https
+NEXT_PUBLIC_WEAVIATE_HOST=[cloud-instance].weaviate.cloud
 WEAVIATE_API_KEY=[api-key]
 
 # AI Services
-ANTHROPIC_API_KEY=[claude-api]
-VOYAGE_API_KEY=[voyage-embeddings]
-OPENAI_API_KEY=[openai-api]
+ANTHROPIC_API_KEY=[claude-api-key]
+VOYAGE_API_KEY=[voyage-ai-key]
+OPENAI_API_KEY=[openai-key]
 
 # Monitoring
 BRAINTRUST_API_KEY=[braintrust-key]
+
+# Vertex AI (legacy - not currently used)
+VERTEX_AI_PROJECT_ID=[project-id]
+GOOGLE_APPLICATION_CREDENTIALS=[path-to-json]
 ```
 
-## Backend Scripts (vc-pipeline/)
+## Key Scripts
 
-### Dynamic RAG Scripts
-- `dynamic_rag_wcs.py`: Main dynamic extraction system
-- `ingest_all_dynamic.py`: Bulk PDF ingestion
-- `complete_dynamic_ingestion.py`: Full pipeline with Voyage
-- `verify_dynamic_collection.py`: Collection verification
+### Collection Management
+- `scripts/create-collection.js`: Create SmartExtraction collection
+- `scripts/ingest-documents.js`: Full ingestion pipeline
+- `scripts/test-single-doc.js`: Test embedding/insertion
 
-### Key Features
-- No predefined schema constraints
-- Adaptive field extraction based on content
-- DSPy optimization ready
-- Voyage-3 contextual embeddings
-
-## Performance Metrics
-
-### Search Performance
-- **Standard Search**: ~10 seconds
-- **DSPy Initial**: ~30 seconds
-- **DSPy Optimized**: ~15 seconds
-- **Dynamic RAG**: ~12 seconds with Voyage
-
-### Extraction Statistics
-- **Documents Processed**: 18+
-- **Unique Fields Discovered**: 122
-- **Extraction Success Rate**: 95%
-- **Average Fields per Doc**: 6-12
-
-## Recent Updates (October 2024)
-
-### Dynamic RAG Implementation
-- Created schema-free extraction system
-- Integrated Voyage-3 embeddings
-- Processed Advanced Navigation & Wonde docs
-- Achieved 122 unique field discovery
-
-### DSPy Integration
-- TypeScript-native optimization
-- Multi-stage RAG pipeline
-- Self-learning system
-- Braintrust integration
-
-## Development Workflow
-
+### Running Ingestion
 ```bash
-# Frontend
-cd vc-pipeline-frontend
-npm run dev  # Port 3000/3001/3002
-
-# Backend Processing
-cd vc-pipeline
-python ingest_all_dynamic.py  # Dynamic extraction
-python verify_dynamic_collection.py  # Verify results
+node scripts/ingest-documents.js
+# Processes PDFs from:
+# - C:\RyanCode\VeronaAI\vc-pipeline\upswell_companies\1_advanced_navigation
+# - C:\RyanCode\VeronaAI\vc-pipeline\upswell_companies\2_wonde
+# - C:\RyanCode\VeronaAI\vc-pipeline\upswell_companies\3_securestack
 ```
 
 ## Directory Structure
@@ -182,29 +254,97 @@ python verify_dynamic_collection.py  # Verify results
 vc-pipeline-frontend/
 ├── app/
 │   ├── api/
-│   │   ├── search-dspy/
-│   │   └── search-optimized/
-│   └── page.tsx
+│   │   ├── search/route.ts          # Main search endpoint
+│   │   ├── extract-companies/       # Company extraction
+│   │   └── inspect-*/               # Schema inspection
+│   ├── companies/                   # Company pages
+│   └── page.tsx                     # Home page
 ├── lib/
-│   ├── dspy/
-│   ├── claude.ts
-│   └── weaviate.ts
-└── components/
-
-vc-pipeline/
-├── dynamic_rag_wcs.py
-├── ingest_all_dynamic.py
-├── complete_dynamic_ingestion.py
-└── upswell_companies/
-    ├── 1_advanced_navigation/
-    └── 2_wonde/
+│   ├── weaviate.ts                  # Weaviate service layer
+│   ├── claude.ts                    # Claude answer synthesis
+│   ├── braintrust-enhanced.ts       # Metrics tracking
+│   └── dspy/                        # DSPy optimization (experimental)
+├── components/
+│   └── search/SearchBar.tsx
+├── scripts/
+│   ├── create-collection.js         # Setup SmartExtraction
+│   ├── ingest-documents.js          # Main ingestion pipeline
+│   └── test-single-doc.js
+├── config/
+│   └── weaviate.config.ts           # Weaviate client setup
+└── .env.local                       # Environment configuration
 ```
 
-## Key Achievements
+## Data Flow
 
-1. **Dynamic Field Extraction**: No rigid schemas, adaptive to content
-2. **Voyage-3 Integration**: Superior contextual understanding
-3. **DSPy Optimization**: Self-improving RAG system
-4. **Production Ready**: 18+ documents successfully processed
+1. **User Query** → Frontend SearchBar
+2. **API Request** → `/api/search`
+3. **Query Enhancement** → Add investor context if relevant
+4. **Vector Search** → Weaviate (semantic or hybrid)
+5. **Result Processing** → Parse dynamic extracted_fields
+6. **AI Synthesis** → Claude generates comprehensive answer
+7. **Response** → Results + AI answer + confidence + sources
+8. **Tracking** → Braintrust logs metrics
 
-This documentation provides comprehensive technical context for the VC Pipeline with dynamic RAG capabilities.
+## Performance Metrics
+
+### Current Stats (October 2025)
+- **Documents**: 72 PDFs
+- **Chunks**: 1,241 embedded chunks
+- **Companies**: 3 (Advanced Navigation, Wonde, SecureStack)
+- **Vector Dimension**: 1024 (Voyage-3)
+- **Search Latency**: ~2-3 seconds (hybrid search + AI synthesis)
+
+### Extraction Success
+- **Unique Field Types**: 100+ different fields discovered
+- **Avg Fields/Document**: 12-18 fields
+- **Extraction Success Rate**: ~95%
+- **Empty/Corrupted PDFs**: Gracefully skipped
+
+## Legacy Collections (Not Currently Used)
+
+- `VC_PE_Claude97_Production`: Fixed 97-field schema (superseded)
+- `DynamicCompanies`: Earlier experimental collection
+- API routes for these exist but are not active
+
+## Recent Changes (October 2025)
+
+### SmartExtraction Collection Launch
+- ✅ Created Voyage-3 powered collection
+- ✅ Ingested 72 documents across 3 companies
+- ✅ Switched all search endpoints to SmartExtraction
+- ✅ Dynamic metadata extraction with Claude Sonnet 4.5
+
+### Key Improvements
+- No fixed schema constraints
+- Rich metadata automatically extracted
+- Superior semantic search with Voyage-3
+- Comprehensive AI answer synthesis
+
+## Development Workflow
+
+```bash
+# Start frontend
+npm run dev
+
+# Create new collection
+node scripts/create-collection.js
+
+# Ingest documents
+node scripts/ingest-documents.js
+
+# Test search
+# Navigate to http://localhost:3000
+# Enter query, get results with dynamic metadata
+```
+
+## Design Principles
+
+1. **Schema-Free**: No predefined fields, adapt to content
+2. **AI-First**: Claude extracts what's relevant, not what's expected
+3. **Semantic Search**: Voyage-3 understands context, not just keywords
+4. **Comprehensive Answers**: Synthesize insights, don't just return chunks
+5. **Observable**: Track everything with Braintrust
+6. **Production-Ready**: Handle errors, skip bad PDFs, batch efficiently
+
+This documentation provides complete technical context for understanding and extending the VC Pipeline platform.
