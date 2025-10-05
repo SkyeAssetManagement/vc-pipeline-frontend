@@ -59,7 +59,7 @@ Respond with JSON:
     // Step 3: Retrieve documents from Weaviate
     const searchResults = await this.weaviateService.hybridSearch(
       enhancedQuery,
-      filters?.limit || 30
+      0.7  // alpha parameter for hybrid search (0.0-1.0)
     );
 
     // Step 4: Rerank documents - use more content for better ranking
