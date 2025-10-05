@@ -109,7 +109,7 @@ export class DSPyOptimizer {
     }
 
     // Add best examples from each category to the pipeline
-    for (const [queryType, examples] of taskExamples.entries()) {
+    for (const [queryType, examples] of Array.from(taskExamples.entries())) {
       const bestExamples = examples
         .sort((a, b) => (b.score || 0) - (a.score || 0))
         .slice(0, DSPY_CONFIG.maxBootstrapExamples);
@@ -207,8 +207,8 @@ export class DSPyOptimizer {
     const expectedTerms = new Set(expected.toLowerCase().split(/\s+/));
     const actualTerms = new Set(actual.toLowerCase().split(/\s+/));
 
-    const intersection = new Set([...expectedTerms].filter(x => actualTerms.has(x)));
-    const union = new Set([...expectedTerms, ...actualTerms]);
+    const intersection = new Set(Array.from(expectedTerms).filter(x => actualTerms.has(x)));
+    const union = new Set([...Array.from(expectedTerms), ...Array.from(actualTerms)]);
 
     return union.size > 0 ? intersection.size / union.size : 0;
   }

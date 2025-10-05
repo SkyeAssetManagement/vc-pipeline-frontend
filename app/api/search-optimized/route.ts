@@ -97,54 +97,72 @@ export async function POST(request: NextRequest) {
       searchResults = [];
     }
 
-    // Process and format results with VC_PE_Claude97_Production schema
-    const processedResults = searchResults.map((result: any, index: number) => ({
-      id: result.chunk_id || `result-${index}`,
-      type: 'document',
-      title: result.document_type || 'Document',
-      company: result.company_name || 'Unknown Company',
-      snippet: result.content ? result.content.substring(0, 200) + '...' : 'No content available',
-      content: result.content,
-
-      // Enhanced metadata from VC_PE_Claude97_Production schema
-      documentType: result.document_type,
-      industry: result.industry,
-      claudeExtraction: result.claude_extraction,
-
-      // Financial data
-      investmentAmount: result.investment_amount || 0,
-      preMoneyValuation: result.pre_money_valuation || 0,
-      postMoneyValuation: result.post_money_valuation || 0,
-      fairValue: result.fair_value || 0,
-      valuationPricePerShare: 0, // Field removed from schema
-      ownershipPercentage: result.ownership_percentage || 0,
-      currentOwnershipPercentage: 0, // Field removed from schema
-      multipleOnInvestedCapital: 0, // Field removed from schema
-      internalRateOfReturn: 0, // Field removed from schema
-
-      // Content analysis flags (derived from financial data)
-      hasInvestmentAmount: (result.investment_amount && result.investment_amount > 0) || false,
-      hasValuation: (result.pre_money_valuation && result.pre_money_valuation > 0) || false,
-      hasOwnership: (result.ownership_percentage && result.ownership_percentage > 0) || false,
-      hasFairValue: (result.fair_value && result.fair_value > 0) || false,
-
-      // Standard metadata
-      score: result._additional?.score || 0,
-      extractionConfidence: result.extraction_confidence || 0,
-      extractionTimestamp: null, // Field removed from schema
-      contentConfidence: result.extraction_confidence || 0, // Map for backwards compatibility
-
-      // Backwards compatibility fields
-      extractedAmounts: result.investment_amount ? [{ value: result.investment_amount, currency: 'USD' }] : [],
-      extractedDates: [], // Timestamp field removed from schema
-      keyParties: [],
-      financialTerms: {
-        investment_amount: result.investment_amount,
-        pre_money_valuation: result.pre_money_valuation,
-        post_money_valuation: result.post_money_valuation,
-        ownership_percentage: result.ownership_percentage
+    // Process and format results with SmartExtraction schema
+    const processedResults = searchResults.map((result: any, index: number) => {
+      // Parse extracted_fields JSON
+      let extractedFields: Record<string, any> = {};
+      try {
+        extractedFields = result.extracted_fields ? JSON.parse(result.extracted_fields) : {};
+      } catch (e) {
+        console.warn('Failed to parse extracted_fields:', e);
       }
-    }));
+
+      // Extract financial data from extracted_fields
+      const investmentAmount = extractedFields.investment_amount || extractedFields.investmentAmount || 0;
+      const preMoneyValuation = extractedFields.pre_money_valuation || extractedFields.preMoneyValuation || 0;
+      const postMoneyValuation = extractedFields.post_money_valuation || extractedFields.postMoneyValuation || 0;
+      const fairValue = extractedFields.fair_value || extractedFields.fairValue || 0;
+      const ownershipPercentage = extractedFields.ownership_percentage || extractedFields.ownershipPercentage || 0;
+
+      return {
+        id: result.chunk_id || `result-${index}`,
+        type: 'document',
+        title: result.document_type || extractedFields.document_type || 'Document',
+        company: result.company_name || 'Unknown Company',
+        snippet: result.content ? result.content.substring(0, 200) + '...' : 'No content available',
+        content: result.content,
+        filePath: result.file_path,
+
+        // Enhanced metadata from SmartExtraction schema
+        documentType: result.document_type,
+        sectionType: result.section_type,
+        roundInfo: result.round_info,
+        chunkIndex: result.chunk_index,
+        tokenCount: result.token_count,
+
+        // Financial data from extracted_fields
+        investmentAmount,
+        preMoneyValuation,
+        postMoneyValuation,
+        fairValue,
+        ownershipPercentage,
+
+        // Additional extracted fields
+        extractedFields,
+
+        // Content analysis flags (derived from financial data)
+        hasInvestmentAmount: investmentAmount > 0,
+        hasValuation: preMoneyValuation > 0 || postMoneyValuation > 0,
+        hasOwnership: ownershipPercentage > 0,
+        hasFairValue: fairValue > 0,
+
+        // Standard metadata
+        score: result._additional?.score || 0,
+        extractionConfidence: 1.0, // SmartExtraction doesn't have confidence score
+        contentConfidence: 1.0,
+
+        // Backwards compatibility fields
+        extractedAmounts: investmentAmount > 0 ? [{ value: investmentAmount, currency: 'USD' }] : [],
+        extractedDates: [],
+        keyParties: extractedFields.key_parties || [],
+        financialTerms: {
+          investment_amount: investmentAmount,
+          pre_money_valuation: preMoneyValuation,
+          post_money_valuation: postMoneyValuation,
+          ownership_percentage: ownershipPercentage
+        }
+      };
+    });
 
     // Group results by company for better organization
     const groupedResults = processedResults.reduce((acc: any, result: any) => {
@@ -152,7 +170,6 @@ export async function POST(request: NextRequest) {
       if (!acc[company]) {
         acc[company] = {
           company,
-          industry: result.industry,
           documents: [],
           totalScore: 0,
           hasInvestmentAmount: false,
@@ -162,7 +179,9 @@ export async function POST(request: NextRequest) {
           averageConfidence: 0,
           totalInvestmentAmount: 0,
           totalValuation: 0,
-          averageOwnership: 0
+          averageOwnership: 0,
+          documentTypes: new Set(),
+          roundInfos: new Set()
         };
       }
       acc[company].documents.push(result);
@@ -171,6 +190,10 @@ export async function POST(request: NextRequest) {
       acc[company].hasValuation = acc[company].hasValuation || result.hasValuation;
       acc[company].hasOwnership = acc[company].hasOwnership || result.hasOwnership;
       acc[company].hasFairValue = acc[company].hasFairValue || result.hasFairValue;
+
+      // Track document types and round info
+      if (result.documentType) acc[company].documentTypes.add(result.documentType);
+      if (result.roundInfo) acc[company].roundInfos.add(result.roundInfo);
 
       // Aggregate financial data
       if (result.investmentAmount > 0) {
@@ -190,6 +213,8 @@ export async function POST(request: NextRequest) {
     const companyGroups = Object.values(groupedResults)
       .map((group: any) => ({
         ...group,
+        documentTypes: Array.from(group.documentTypes),
+        roundInfos: Array.from(group.roundInfos),
         averageScore: group.totalScore / group.documents.length,
         averageConfidence: group.documents.reduce((sum: number, doc: any) => sum + doc.contentConfidence, 0) / group.documents.length
       }))
@@ -274,11 +299,11 @@ export async function GET() {
       POST: '/api/search-optimized - Perform enhanced search with structured data'
     },
     features: [
-      'Voyage Context-3 embeddings',
-      'Strategic structured data extraction',
+      'Voyage-3 embeddings',
+      'Dynamic field extraction with extracted_fields JSON',
       'Enhanced document classification',
       'Content analysis flags',
-      'Advanced filtering capabilities'
+      'Flexible filtering capabilities'
     ],
     example: {
       method: 'POST',
@@ -286,9 +311,8 @@ export async function GET() {
         query: 'Show me Series A investment terms',
         filters: {
           company: 'Advanced Navigation',
-          documentType: 'subscription_agreement',
-          hasInvestmentAmount: true,
-          minConfidence: 0.7
+          documentType: 'term_sheet',
+          roundInfo: 'Series A'
         },
         searchType: 'hybrid',
         useOptimizedCollection: true

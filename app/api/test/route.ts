@@ -1,39 +1,38 @@
 import { NextResponse } from 'next/server';
 import { WeaviateService } from '@/lib/weaviate';
+import { OptimizedWeaviateService } from '@/lib/weaviate-optimized';
 
 export async function GET() {
   try {
-    console.log('🔗 Testing Weaviate connection...');
-    
-    // Test portfolio overview
-    const overview = await WeaviateService.getPortfolioOverview();
-    
-    // Get sample data
-    const [companies, investors, investments] = await Promise.all([
-      WeaviateService.getCompanies(),
-      WeaviateService.getInvestors(), 
-      WeaviateService.getInvestments()
+    console.log('🔗 Testing Weaviate SmartExtraction connection...');
+
+    // Test SmartExtraction collection with sample searches
+    const [investmentSearch, companySearch, stats] = await Promise.all([
+      WeaviateService.hybridSearch('investment amount subscription agreement', 0.7),
+      WeaviateService.semanticSearch('company portfolio venture capital'),
+      OptimizedWeaviateService.getDocumentStats()
     ]);
 
     return NextResponse.json({
       success: true,
-      message: 'Connection successful!',
-      overview,
-      sampleData: {
-        companies: companies.slice(0, 3),
-        investors: investors.slice(0, 3),
-        investments: investments.slice(0, 5)
+      message: 'SmartExtraction collection connection successful!',
+      stats,
+      sampleSearchResults: {
+        investmentSearch: investmentSearch.slice(0, 3),
+        companySearch: companySearch.slice(0, 3)
       },
-      stats: {
-        totalCompanies: companies.length,
-        totalInvestors: investors.length,
-        totalInvestments: investments.length
+      collectionInfo: {
+        name: 'SmartExtraction',
+        vectorizer: 'Voyage-3',
+        totalChunks: stats.totalChunks,
+        uniqueCompanies: stats.companies.length,
+        documentTypes: stats.documentTypes
       }
     });
 
   } catch (error) {
     console.error('Connection test failed:', error);
-    
+
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

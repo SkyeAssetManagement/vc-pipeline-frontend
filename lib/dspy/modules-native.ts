@@ -189,12 +189,12 @@ export class AdaptiveQueryOptimizer {
     let bestStrategy = 'basic';
     let bestScore = 0;
 
-    for (const [strategy, score] of this.performanceMetrics.entries()) {
+    Array.from(this.performanceMetrics.entries()).forEach(([strategy, score]) => {
       if (score > bestScore) {
         bestScore = score;
         bestStrategy = strategy;
       }
-    }
+    });
 
     return bestStrategy;
   }

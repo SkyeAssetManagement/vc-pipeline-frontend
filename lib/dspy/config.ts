@@ -1,5 +1,3 @@
-import dspy from 'dspy';
-
 export interface DSPyConfig {
   llm: string;
   retriever: string;
