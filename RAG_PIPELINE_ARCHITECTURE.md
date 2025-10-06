@@ -58,7 +58,7 @@ Streaming Response (via Vercel AI SDK)
 | **API** | Next.js API Routes | Serverless backend |
 | **Embeddings** | Voyage AI (voyage-large-3) | Document & query vectorization |
 | **Vector DB** | Weaviate Cloud | Hybrid search (vector + keyword) |
-| **LLM** | Anthropic Claude | Query expansion & answer generation |
+| **LLM** | Anthropic Claude Sonnet 4.5 | Query expansion & answer generation |
 | **Monitoring** | Braintrust | Logging, tracing, quality metrics |
 
 ## Key Design Decisions

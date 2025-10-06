@@ -12,7 +12,7 @@ Look for the **"DSPy Optimization"** toggle switch above the search bar and turn
 - Status panel showing:
   - **Status**: 🔄 Learning (not yet optimized)
   - **Examples**: 0 (starts empty)
-  - **Model**: claude-3-sonnet
+  - **Model**: claude-sonnet-4-5-20250929
   - **Message**: "Need 50 more examples for optimization"
 
 ### 3. Test Queries to Try
@@ -95,7 +95,7 @@ Returns:
   "status": {
     "isOptimized": false,
     "trainingExamples": 0,
-    "currentModel": "claude-3-sonnet",
+    "currentModel": "claude-sonnet-4-5-20250929",
     "performanceScore": null
   }
 }

@@ -147,6 +147,7 @@
 - [x] Ingested 72 documents across 3 companies (1,241 chunks)
 - [x] Migrated all search endpoints to SmartExtraction
 - [x] Updated to Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
+- [x] Updated DSPy to use Claude Sonnet 4.5 for optimization
 - [x] Fixed DSPy hybrid search alpha parameter (0.7)
 - [x] Added response time tracking to all endpoints
 - [x] Integrated Braintrust for production monitoring
@@ -154,5 +155,6 @@
 - [x] Implemented schema-free field extraction (100+ unique fields)
 - [x] Created OptimizedWeaviateService for filtered searches
 - [x] Built DSPyEnhancedRAGService with automatic optimization
+- [x] Updated all documentation to reflect Claude Sonnet 4.5
 
 This TODO list reflects the current production state and prioritizes immediate next steps for scaling, quality, and feature development.

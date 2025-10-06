@@ -7,9 +7,9 @@ AI-powered venture capital portfolio management platform with semantic document 
 - **Framework**: Next.js 14.2.32 (App Router, TypeScript)
 - **Vector Database**: Weaviate Cloud (SmartExtraction collection)
 - **AI Models**:
-  - Claude Sonnet 4.5 (claude-sonnet-4-5-20250929) - Answer synthesis & metadata extraction
-  - Voyage-3 (1024-dim embeddings) - Semantic search
-- **Optimization**: DSPy RAG pipeline with automatic reranking
+  - Claude Sonnet 4.5 (claude-sonnet-4-5-20250929) - Answer synthesis, metadata extraction & DSPy optimization
+  - Voyage-3 (voyage-large-3, 1024-dim embeddings) - Semantic search
+- **Optimization**: DSPy RAG pipeline with automatic reranking & self-improvement
 - **Observability**: Braintrust (response time tracking, model versioning)
 - **Deployment**: Vercel
 
@@ -414,6 +414,7 @@ vc-pipeline-frontend/
 - ✅ Created Voyage-3 collection with dynamic metadata
 - ✅ Migrated all endpoints to SmartExtraction
 - ✅ Updated Claude to Sonnet 4.5 (claude-sonnet-4-5-20250929)
+- ✅ Updated DSPy to use Claude Sonnet 4.5 for optimization
 - ✅ Fixed DSPy hybrid search alpha parameter
 - ✅ Added response time tracking for evaluation
 - ✅ Deployed to Vercel with environment variables
@@ -423,6 +424,7 @@ vc-pipeline-frontend/
 - Model version tracking for A/B testing
 - Braintrust integration for production monitoring
 - Timestamp logging (ISO 8601)
+- Unified model across pipeline (Claude Sonnet 4.5)
 
 ## Development Workflow
 

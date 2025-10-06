@@ -82,7 +82,7 @@ PUT /api/search-dspy
 PUT /api/search-dspy
 {
   "action": "model-change",
-  "newModel": "claude-3-opus"
+  "newModel": "claude-sonnet-4-5-20250929"
 }
 ```
 
@@ -92,7 +92,7 @@ Edit `lib/dspy/config.ts` to adjust:
 
 ```typescript
 export const DSPY_CONFIG = {
-  llm: 'claude-3-sonnet',              // LLM for DSPy operations
+  llm: 'claude-sonnet-4-5-20250929',   // LLM for DSPy operations (Claude Sonnet 4.5)
   retriever: 'weaviate-hybrid',        // Retrieval method
   optimizer: 'BootstrapFewShotWithRandomSearch',
   maxBootstrapExamples: 20,            // Max training examples
